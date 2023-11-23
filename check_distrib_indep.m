@@ -1,9 +1,10 @@
 function check_distrib_indep(dataGroup1, dataGroup2, header)
 % This function works for two independent groups dataGroup1 and dataGroup2
 % 1. check for difference between groups using a non-paramatric test
-% 2. if not different, group data, otherwise keep separated
-% 3. plot distributions (if not grouped, group 1 is on line 1, group 2 on line 2
+% 2. if not different, pool data between groups, otherwise keep separated
+% 3. plot distributions (line 1: group 1 is on column 1, group 2 on column 2, pooled data on column 3)
 % 4. check for normality of the distribution using Kolmogorov-Smirnov test
+% 5. if non-normal, attempt to transform the data in log10 and plot it (second line)
 % The header should be the name of the dependent variable.
 
 if ~exist('header','var'); header = ''; end
