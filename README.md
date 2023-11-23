@@ -49,7 +49,8 @@ Kolmogorov-Smirnov tests for normality:  Group 1 - KS = 0.19, p = 0.2653 and Gro
 You can see that the distributions are significantly different between groups and should therefore not be pooled. It is normal for each group though, so that 'normal' can be later selected as the distribution for the dependent variable.
 
 ### corrplot2
-This function is almost identical to corrplot (Matlab included). Use it to check collinearity between factors. As a rule of thumb, only include factors that correlate together less than 0.8/-0.8.
+This function is almost identical to corrplot (Matlab included). Use it to check collinearity between factors. As a rule of thumb, only include factors that correlate together less than 0.8/-0.8. Do not include non-ordered categorical variables here.
+
 #### Typical use
 ```matlab
 % Create a table of the factors for conveniency
