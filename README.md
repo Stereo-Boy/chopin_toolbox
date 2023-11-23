@@ -20,7 +20,7 @@ The following functions are used together to easily separate model selection fro
 * corrplot2 to check collinearity between factors
 * all_glm automatically tests and ranks all GLMs as combinations of factors/interactions of factors/link functions
 * display_model formats the results in the command window for one model in the list and show diagnostic plots for that model
-* plot_group_effect/plot_covariate_effect plots the results easily for one model
+* plot_group_effect/plot_covariate_effect/plot_interaction: plot the results easily for one model
 The following 'typical use' sections should be chained one with the other as a typical pipeline.
 
 ### check_distrib_indep
@@ -45,6 +45,7 @@ Data are significantly different, so let's keep them separated
 Kolmogorov-Smirnov tests for normality:  Group 1 - KS = 0.19, p = 0.2653 and Group 2 - KS = 0.09, p = 0.9626
 ```
 ![a figure showing the output distributions](example_figures/working_memory_initial_distrib.png)
+
 You can see that the distributions are significantly different between groups and should therefore not be pooled. It is normal for each group though, so that 'normal' can be later selected as the distribution for the dependent variable.
 
 ### corrplot2
@@ -58,7 +59,9 @@ corrplot2(data_factors,'type','Kendall')
 snapnow; %plot figure when publishing markdown code
 ```
 Results obtained:
+
 ![a figure showing the correlation plot](example_figures/collinearity.png)
+
 Conclusion: no factor to exclude because of collinearity
 
 ### all_glm
@@ -184,7 +187,7 @@ As you can see, the best model according to AICc shows
 
 Now if you are happy with this model fit, you can decide to look at the stastitics. This model shows a significant effect of meditation and music factors on the dependent variable. This code does not allow yet to calculate effect sizes.
 
-### plot_group_effect/plot_covariate_effect 
+### plot_group_effect / plot_covariate_effect / plot_interaction
 plots the results for one model
 
 #### Typical use
