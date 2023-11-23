@@ -1,4 +1,4 @@
-function plot_covariate_effect(dv, covariate, handle, xlabell, ylabell, loggX, loggY, mdl, plotModel)   
+function plot_covariate_effect(dv, covariate, handle, xlabell, ylabell, loggX, loggY, mdl, plotModel,model)  
 % dv, dependent variable data
 % covariate data (continuous)
 % handle: handle of an existing figure plot or subplot
@@ -8,13 +8,20 @@ function plot_covariate_effect(dv, covariate, handle, xlabell, ylabell, loggX, l
 % loggY, if 1, y is in log scale, 0 by default, optional
 % mdl, the mdl structure, optional
 % plotModel, 0 or 1, if 1, will use data predictions in mdl structure and plot the model data, optional
+% model is used to remove flagged outliers from the data
 % ex of usage: 
-% h=subplot(1,3,1); plot_covariate_effect(data_8_12_27_49.one_minus_initial_orient, data_8_12_27_49.music, h, 'Music practice (hours)', '1 - initial orientation threshold', 0, 0, mdls{1},1)
+% h=subplot(1,3,1); plot_covariate_effect(data_8_12_27_49.one_minus_initial_orient, data_8_12_27_49.music, h,...
+%   'Music practice (hours)', '1 - initial orientation threshold', 0, 0, mdls{1},1, model)
+if ~exist('model','var'); model.exclude = []; end
 if ~exist('loggX','var'); loggX=0; end
 if ~exist('loggY','var'); loggY=0; end
 if ~exist('plotModel','var'); plotModel=0; end
 
     x = covariate; y =  dv;
+    if ~isempty(model.exclude) % exclude outliers
+       x(model.exclude) = []; 
+       y(model.exclude) = []; 
+    end
     plot(handle,x,y,'k.'); hold on; 
     if exist('mdl','var'); y2 =  mdl.Fitted.Response; else; y2 = zeros(size(x)); end
     if plotModel 

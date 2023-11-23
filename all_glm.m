@@ -24,7 +24,7 @@ function mdls = all_glm(model)
 %     saveas(gcf,fullfile(figure_path,'working_memory_initial_glm.png')); 
 
 if isempty(model.solid_factors); skip_solid = 1; else; skip_solid = 0; end
-if isfield(model,'warning_off') || model.warning_off==1; warning('off','all'); end
+if isfield(model,'warning_off') || model.warning_off==0; end
 if isfield(model,'exclude') ; exclude = 1; else; exclude = 0; end
 if exclude % here I prefer to exclude the observations, rather than using the Exclude option in fitglm, otherwise, the excluded data are then wrongly reincorporated in the diagnostic plots.
    model.data(model.exclude,:) = []; 

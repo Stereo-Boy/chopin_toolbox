@@ -1,4 +1,4 @@
-function varargout = corrplot(X,varargin)
+function varargout = corrplot2(X,varargin)
 %CORRPLOT Plot variable correlations
 %
 % Syntax:
