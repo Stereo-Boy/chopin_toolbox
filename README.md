@@ -179,7 +179,7 @@ Adjusted R^2: 24%
 Residuals: Kolmogorov test for normality (alpha 5%):  KS = 0.10, p = 0.6403
 Residuals are normal
 ```
-![a figure showing the correlation plot](example_figures/diagnostics.png)
+![a figure showing the diagnostics plot](example_figures/diagnostics.png)
 As you can see, the best model according to AICc shows 
 * no outlier (first plot of Cook's distance - no datapoint is both above 1 and far away from the other datapoints - personal criterion)
 * a little bit of fanning: in other words, there is more variability of the residuals for larger fitted values. That could possibly be resolved by changing the distribution, the link function or transforming the dependent variable in log. 
@@ -203,7 +203,7 @@ plot_group_effect(data.initial_work_mem, data.meditation, h, 'Meditation group',
 saveas(gcf,fullfile(figure_path,'results.png')); 
 snapnow; %plot figure when publishing markdown code
 ```
-![a figure showing the correlation plot](example_figures/results.png)
+![a figure showing the group effect plot](example_figures/results.png)
 
 For a continuous factor or an interaction relationship, you can use plot_covariate_effect or plot_interaction instead. The example below plots the effect of music practice in hours on our dependent variable.
 
@@ -211,8 +211,14 @@ For a continuous factor or an interaction relationship, you can use plot_covaria
 h=subplot(1,4,4);
 plot_covariate_effect(data.initial_work_mem, data.music, h, 'Music practice (hours)', 'initial working memory performance', 0, 0, mdls{1},1,model);
 ```
-![a figure showing the correlation plot](example_figures/results_continuous.png)
+![a figure showing the continuous variable effect plot](example_figures/results_continuous.png)
 
+```matlab
+h=subplot(1,4,4);
+pplot_interaction(data.Time, data.stereo,data.ageGroup, h, 'Age group (younger / older)','Task completion time (sec)', {'Monocular','Binocular'},mdls{1}, 1, model)
+```
+![a figure showing the interaction plot](example_figures/results_interaction.png)
+Note that the interaction plot code works only with a grouping variable with two levels.
 
 ## Authors
 Adrien Chopin, 2023
