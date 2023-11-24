@@ -213,9 +213,10 @@ plot_covariate_effect(data.initial_work_mem, data.music, h, 'Music practice (hou
 ```
 ![a figure showing the continuous variable effect plot](example_figures/results_continuous.png)
 
+This one below looks at an interaction between age group and stereo condition for the Time dependent variable.
 ```matlab
 h=subplot(1,4,4);
-pplot_interaction(data.Time, data.stereo,data.ageGroup, h, 'Age group (younger / older)','Task completion time (sec)', {'Monocular','Binocular'},mdls{1}, 1, model)
+plot_interaction(data.Time, data.stereo,data.ageGroup, h, 'Age group (younger / older)','Task completion time (sec)', {'Monocular','Binocular'},mdls{1}, 1, model)
 ```
 ![a figure showing the interaction plot](example_figures/results_interaction.png)
 Note that the interaction plot code works only with a grouping variable with two levels.
