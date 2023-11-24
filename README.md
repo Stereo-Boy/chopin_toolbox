@@ -15,7 +15,7 @@ The toolbox contains various handy functions for manipulating files and data, mo
 
 ## Content
 ### Automated GLM (generalized) pipeline
-The following functions are used together to easily separate model selection from statistics. 
+The following functions are used together to easily separate model selection from statistical hypothesis testing. While some statisticians might be horrified by this idea, others argue that it is possible to use non-hypothesis-based metrics like AICc or adjusted R^2 to select for the best model in a first step, check for the numerous validity conditions before selecting the best model, and then do hypothesis testing using this model (using metrics like p-values and effect sizes). Keep in mind that I am not a qualified statistician.
 * check_distrib_indep to visualize the shape of dependent variable distribution and test whether normal with Kolmogorov-Smirnov test
 * corrplot2 to check collinearity between factors
 * all_glm automatically tests and ranks all GLMs as combinations of factors/interactions of factors/link functions
