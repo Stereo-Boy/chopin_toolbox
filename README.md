@@ -197,7 +197,7 @@ plots the results for one model
 % there is an empty subplot that I like to fill with a figure showing the most interesting result, here a significant meditation group effect
 h=subplot(1,4,4);
 
-plot_group_effect(data.initial_work_mem, data.meditation, h, 'Meditation group', 'initial working memory performance', {'Meditators','Non-meditators'})
+plot_group_effect(data.initial_work_mem, data.meditation, h, 'Meditation group', 'initial working memory performance', {'Meditators','Non-meditators'}, 0, model)
 
 % save the figure
 saveas(gcf,fullfile(figure_path,'results.png')); 
@@ -213,8 +213,6 @@ plot_covariate_effect(data.initial_work_mem, data.music, h, 'Music practice (hou
 ```
 ![a figure showing the correlation plot](example_figures/results_continuous.png)
 
-#### Troubleshooting warning
-plot_interaction and plot_covariate_effect may behave wrongly in case observations are excluded and may need some adaptations, like done in plot_covariate_effect.
 
 ## Authors
 Adrien Chopin, 2023

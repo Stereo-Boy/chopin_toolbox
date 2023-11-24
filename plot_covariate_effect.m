@@ -10,15 +10,17 @@ function plot_covariate_effect(dv, covariate, handle, xlabell, ylabell, loggX, l
 % plotModel, 0 or 1, if 1, will use data predictions in mdl structure and plot the model data, optional
 % model is used to remove flagged outliers from the data
 % ex of usage: 
-% h=subplot(1,3,1); plot_covariate_effect(data_8_12_27_49.one_minus_initial_orient, data_8_12_27_49.music, h,...
-%   'Music practice (hours)', '1 - initial orientation threshold', 0, 0, mdls{1},1, model)
+% h=subplot(1,4,1); 
+% plot_covariate_effect(data.initial_orient, data.music, h,...
+%   'Music practice (hours)', 'initial orientation threshold', 0, 0, mdls{1},1, model)
 if ~exist('model','var'); model.exclude = []; end
 if ~exist('loggX','var'); loggX=0; end
 if ~exist('loggY','var'); loggY=0; end
 if ~exist('plotModel','var'); plotModel=0; end
 
     x = covariate; y =  dv;
-    if ~isempty(model.exclude) % exclude outliers
+    % exclude outliers
+    if ~isempty(model.exclude)
        x(model.exclude) = []; 
        y(model.exclude) = []; 
     end
