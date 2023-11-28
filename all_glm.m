@@ -25,7 +25,7 @@ function mdls = all_glm(model)
 %     h=subplot(1,4,4); plot_group_effect(data.initial_work_mem, data.meditation, h, 'Meditation group', 'initial working memory performance', {'Meditators','Non-meditators'})
 %     saveas(gcf,fullfile(figure_path,'working_memory_initial_glm.png')); 
 
-if isempty(model.solid_factors); skip_solid = 1; else; skip_solid = 0; end
+if isempty(model.solid_factors{:}); skip_solid = 1; else; skip_solid = 0; end
 if isfield(model,'warning_off') || model.warning_off==0; end
 if isfield(model,'exclude') ; exclude = 1; else; exclude = 0; end
 if ~isfield(model,'glme') ; model.glme = 0; end

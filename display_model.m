@@ -2,6 +2,9 @@ function display_model(mdl, glme)
 % mdl the model object to plot (obtained through all_glm / fitglm / fitglme functions
 % glme: whether this is a glme or not (default 0)
 if ~exist('glme','var'); glme = 0; end
+    disp('Summary of variable formats in the model')
+    disp(mdl.VariableInfo(mdl.VariableInfo.InModel==1,:))
+    disp('Summary of the model')
     disp(mdl)
     if glme==1 % this is a GLME
         dispi('AIC: ',mdl.ModelCriterion.AIC)
@@ -9,6 +12,7 @@ if ~exist('glme','var'); glme = 0; end
         dispi('AICc: ',mdl.ModelCriterion.AICc)
     end
     dispi('Adjusted R^2: ',round(100*mdl.Rsquared.Adjusted,1),'%')
+    dispi('R^2: ',round(100*mdl.Rsquared.Ordinary,1),'%')
     [H, P, KSstat] = kstest((mdl.Residuals.raw-nanmean(mdl.Residuals.raw))./nanstd(mdl.Residuals.raw));
     dispi('Residuals: Kolmogorov test for normality (alpha 5%):  KS = ',sprintf('%.2f',KSstat),', p = ',sprintf('%.4f',P));
     if H==1; disp('Residuals are not normal'); else; disp('Residuals are normal'); end
@@ -21,5 +25,6 @@ if ~exist('glme','var'); glme = 0; end
         subplot(1,numplots,3); plotDiagnostics(mdl,'cookd')
     end
     subplot(1,numplots,1); plotResiduals(mdl,'fitted','ResidualType','Pearson');
-    subplot(1,numplots,2); plotResiduals(mdl);    
+    subplot(1,numplots,2); plotResiduals(mdl);   
+    
 end

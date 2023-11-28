@@ -12,6 +12,10 @@ The toolbox contains various handy functions for manipulating files and data, mo
 ### Installing
 * download the code
 * add its containing folder to your matlab search path
+Example: 
+```matlab
+addpath(genpath('C:\Users\Adrian\Desktop\chopin_toolbox'))
+```
 
 ## Content
 ### Automated GLM (Generalized Linear Model)/ GLME (Mixed Effects) pipeline
@@ -35,7 +39,11 @@ To visualize the shape of dependent variable distribution and test whether norma
 #### Typical use
 ```matlab
 % explore which distribution is correct
-check_distrib_indep(data.initial_work_mem(data.meditation==1),data.initial_work_mem(data.meditation==2),'initial_work_mem'); % data.initial_work_mem(data.meditation==1) gathers data for the first group
+% for a categorical grouping factor:
+check_distrib_indep(data.initial_work_mem(data.meditation=='yes'),data.initial_work_mem(data.meditation=='no'),'initial_work_mem'); 
+
+% or for a numeric grouping factor:
+check_distrib_indep(data.initial_work_mem(data.meditation==1),data.initial_work_mem(data.meditation==2),'initial_work_mem'); 
 snapnow; %plot figure when publishing markdown code
 ```
 Results obtained:
@@ -66,8 +74,9 @@ Results obtained:
 Conclusion: no factor to exclude because of collinearity
 
 ### all_glm
-automatically tests and ranks all GLMs/GLMEs as combinations of factors/interactions of factors/link functions
-* you define the data variable, the dependent variable, the distribution
+Automatically tests and ranks all GLMs/GLMEs as combinations of factors/interactions of factors/link functions.
+* you define a data structure, making sure categorical factors have the format 'categorical' (use the converting function categorical for that)
+* you define the dependent variable in data and its the distribution
 * you define a maximum number of factors to include (as a rule of thumb, you need ~10 datapoints for each, interactions are considered as factors).
 * you define a list of liquid and solid factors: solid factors are always included in the list (can be empty), liquid are picked in combination with solid factors until you reach the maximum number of factors. Combinations with a number of factors inferior to the max are also included. Fixed effect factors should not be in parentheses.
 * you define potential model links between the dependend variable and the factors - only include links that make sense, otherwise it may result in errors. Potential links are: 'log', 'reciprocal','identity','-2','-3','probit','logit','loglog','comploglog'
@@ -144,15 +153,19 @@ We tested 30 models.
 Models are ranked by lowest AICc. In a glance, you can find the line of the model that satisfies the following conditions:
 * low AICc
 * positive adjusted R^2
-* R^2 that is large enough for you to qualify as a useful model
+* R^2 that is large enough for you to qualify as a useful model (note that you can also use R^2 to compare a GLM with a GLME)
 * Normality of residuals
-Once you have a candidate, the next step is to check the validity of that candidate with diagnostics plots.
+Once you have a candidate, the next step is to check the validity of that candidate with the diagnostics plots.
 
 ### display_model 
 Formats the results in the command window for one model in the list and show diagnostic plots for that model.
+* displays variable formats for the best model
+* displays best model's stats
+* display diagnostic figures and tests
+
 The diagnostics are:
 * Scatterplot of residuals vs. fitted values - no fanning should be observed (fanning is an increase of residuals variability at larger fitted values)
-* Distribution of residuals - should be normal, indicated by a non-significant Kolmogorov-Smirnov test
+* Distribution of residuals - should be normal, indicated by a non-significant Kolmogorov-Smirnov test (result displayed in the command window)
 * Cook's distance for each observation
 
 #### Typical use
@@ -164,26 +177,36 @@ snapnow; %plot figure when publishing markdown code
 
 Results obtained:
 ```
+Best model (checked for outliers, fanning and normality of residuals):
+Summary of variable formats in the model
+                    Class          Range        InModel    IsCategorical
+                  __________    ____________    _______    _____________
+
+    meditation    {'double'}    {1×2 double}     true          false    
+    sport         {'double'}    {1×2 double}     true          false    
+
+Summary of the model
+
 Generalized linear regression model:
-    log(initial_work_mem) ~ 1 + meditation + music + sport
+    log(initial_work_mem) ~ 1 + meditation + sport
     Distribution = Normal
 
 Estimated Coefficients:
-                    Estimate          SE         tStat       pValue  
-                   ___________    __________    _______    __________
+                    Estimate        SE         tStat       pValue  
+                   __________    _________    _______    __________
 
-    (Intercept)        0.72201      0.079764     9.0519    8.7615e-12
-    meditation        -0.15073      0.051537    -2.9248     0.0053361
-    music            0.0028907      0.001318     2.1933      0.033381
-    sport          -1.0764e-05    6.2821e-06    -1.7135      0.093362
+    (Intercept)       0.73719     0.079089      9.321    4.4876e-12
+    meditation       -0.15394     0.052259    -2.9457     0.0050876
+    sport          -1.105e-05    6.256e-06    -1.7663      0.084127
 
 
-50 observations, 46 error degrees of freedom
-Estimated Dispersion: 0.0773
-F-statistic vs. constant model: 6.17, p-value = 0.00129
-AICc: 18.6186
-Adjusted R^2: 24%
-Residuals: Kolmogorov test for normality (alpha 5%):  KS = 0.10, p = 0.6403
+48 observations, 45 error degrees of freedom
+Estimated Dispersion: 0.0755
+F-statistic vs. constant model: 7.45, p-value = 0.00161
+AICc: 15.6783
+Adjusted R^2: 21.5%
+R^2: 24.9%
+Residuals: Kolmogorov test for normality (alpha 5%):  KS = 0.12, p = 0.4779
 Residuals are normal
 ```
 ![a figure showing the diagnostics plot](example_figures/diagnostics.png)
@@ -196,7 +219,7 @@ As you can see, the best model according to AICc shows
 Now if you are happy with this model fit, you can decide to look at the stastitics. This model shows a significant effect of meditation and music factors on the dependent variable. This code does not allow yet to calculate effect sizes.
 
 ### plot_group_effect / plot_covariate_effect / plot_interaction
-plots the results for one model
+Plots the results for one selected model. For these functions to work, make sure grouping factors have categorical format (using function categorical).
 
 #### Typical use
 ```matlab

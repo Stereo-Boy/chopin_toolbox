@@ -36,13 +36,13 @@ if ~exist('plotModel','var'); plotModel=0; end
         y2 = zeros(size(x)); 
     end
     if plotModel 
-        plot(x.*1.05,y2,'ro'); 
-        ab=robustfit(x.*1.05,y2); 
-        plot(handle,sort(x.*1.05),ab(2).*sort(x.*1.05)+ab(1),'r-');
-        line([x.*1.05,x.*1.05]',[y,y2]','Color','r');
+        plot(x,y2,'ro'); 
+        ab=robustfit(x,y2); 
+        plot(handle,sort(x),ab(2).*sort(x)+ab(1),'r-');
+        line([x,x]',[y,y2]','Color','r');
     end
     xlabel(xlabell); ylabel(ylabell);
-    xlim([min(x).*0.95,max(x).*1.1]);
+    xlim([min(x).*0.95,max(x).*1.05]);
     if loggX==1; set(gca, 'XScale', 'log'); end
     if loggY==1; set(gca, 'YScale', 'log'); end
 end

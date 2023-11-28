@@ -28,35 +28,37 @@ try
     
     % plot for grouping_factor = first value
     x = covariate(grouping_factor==levels(1)); y =  dv(grouping_factor==levels(1));
+    xlevels = unique(x);
     p1=plot(handle,x,y,'b.'); hold on; 
     if model.glme == 0 %glm
         y2 =  mdl.Fitted.Response(grouping_factor==levels(1)); 
     else %glme
         y2 =  mdl.fitted; y2 = y2(grouping_factor==levels(1)); % in two steps to avoid a bug with model object methods
     end
-    if plotModel;  m1 = plot(1.05*x,y2,'bo'); end
-    ab=robustfit(x,y2);plot(handle,sort(x),ab(2).*sort(x)+ab(1),'b-');
+    if plotModel;  m1 = plot(x,y2,'bo'); end
+    medians(1) = nanmedian(y(x==xlevels(1))); medians(2) = nanmedian(y(x==xlevels(2)));
+    plot(handle,xlevels,medians,'b-');
     
     % plot for grouping_factor = second value
     x = covariate(grouping_factor==levels(2)); y =  dv(grouping_factor==levels(2));
-     p2=plot(handle,x,y,'r.'); hold on;
+    xlevels = unique(x);
+    p2=plot(handle,x,y,'r.'); hold on;
     if model.glme == 0 %glm
         y2 =  mdl.Fitted.Response(grouping_factor==levels(2)); 
     else %glme
         y2 =  mdl.fitted; y2 = y2(grouping_factor==levels(2)); % in two steps to avoid a bug with model object methods
     end
-    if plotModel; m2 = plot(1.05*x,y2,'ro'); end
-    ab=robustfit(x,y2); plot(handle,sort(x),ab(2).*sort(x)+ab(1),'r-')
-    xlabel(xlabell); ylabel(ylabell);  
+    if plotModel; m2 = plot(x,y2,'ro'); end
+    xlabel(xlabell); ylabel(ylabell);  xticklabels(xlevels);
+    medians(1) = nanmedian(y(x==xlevels(1))); medians(2) = nanmedian(y(x==xlevels(2)));
+    plot(handle,xlevels,medians,'r-');
     
     % plot legend
     if plotModel
-        legend([p1,p2,m1,m2],{legendLabels{1},legendLabels{2},'Model estimates','Model estimates'});
+        legend([p1,p2,m1,m2],{legendLabels{1},legendLabels{2},'Model estimates','Model estimates'});  
     else
         legend([p1,p2],legendLabels);
     end
-    % plot x limits
-    xlim([0.5,2.5])
     
 catch err 
     % DEBUGGING
