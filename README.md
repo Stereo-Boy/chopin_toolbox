@@ -14,11 +14,11 @@ The toolbox contains various handy functions for manipulating files and data, mo
 * add its containing folder to your matlab search path
 
 ## Content
-### Automated GLM (generalized) pipeline
+### Automated GLM (Generalized Linear Model)/ GLME (Mixed Effects) pipeline
 The following functions are used together to easily separate model selection from statistical hypothesis testing. While some statisticians might be horrified by this idea, others argue that it is possible to use non-hypothesis-based metrics like AICc or adjusted R^2 to select for the best model in a first step, check for the numerous validity conditions before selecting the best model, and then do hypothesis testing using this model (using metrics like p-values and effect sizes). Keep in mind that I am not a qualified statistician.
 * check_distrib_indep to visualize the shape of dependent variable distribution and test whether normal with Kolmogorov-Smirnov test
 * corrplot2 to check collinearity between factors
-* all_glm automatically tests and ranks all GLMs as combinations of factors/interactions of factors/link functions
+* all_glm automatically tests and ranks all GLMs/GLMEs as combinations of factors/interactions of factors/link functions
 * display_model formats the results in the command window for one model in the list and show diagnostic plots for that model
 * plot_group_effect/plot_covariate_effect/plot_interaction: plot the results easily for one model
 The following 'typical use' sections should be chained one with the other as a typical pipeline.
@@ -66,13 +66,14 @@ Results obtained:
 Conclusion: no factor to exclude because of collinearity
 
 ### all_glm
-automatically tests and ranks all GLMs as combinations of factors/interactions of factors/link functions
+automatically tests and ranks all GLMs/GLMEs as combinations of factors/interactions of factors/link functions
 * you define the data variable, the dependent variable, the distribution
 * you define a maximum number of factors to include (as a rule of thumb, you need ~10 datapoints for each, interactions are considered as factors).
-* you define a list of liquid and solid factors: solid factors are always included in the list (can be empty), liquid are picked in combination with solid factors until you reach the maximum number of factors. Combinations with a number of factors inferior to the max are also included.
+* you define a list of liquid and solid factors: solid factors are always included in the list (can be empty), liquid are picked in combination with solid factors until you reach the maximum number of factors. Combinations with a number of factors inferior to the max are also included. Fixed effect factors should not be in parentheses.
 * you define potential model links between the dependend variable and the factors - only include links that make sense, otherwise it may result in errors. Potential links are: 'log', 'reciprocal','identity','-2','-3','probit','logit','loglog','comploglog'
 * optionnally exclude some outlier observations (defined as their line number in the data)
 * optionnally have warnings off (better to keep them on to discover wrong link functions or wrong data - default is warnings on)
+* optionnally run a GLME: you will need at least one random variable, so as a solid factor, expressed as (1|factor). Note that the parentheses are crucial to define the random-effect factor.
 * run all the models and rank them
   
 #### Typical use
@@ -86,16 +87,18 @@ automatically tests and ranks all GLMs as combinations of factors/interactions o
     model.distribution = 'normal';
     % the maximal nb of factors to explore in the model
     model.max_nb_factors = 3;
-    % a factor or a list of factors that are always included in the model (for the moment, works with only one - use '' for none)
-    model.solid_factors = {'meditation'};
+    % a factor or a list of factors that are always included in the model (for the moment, works with only one solid factor - use '' for none)
+    model.solid_factors = {'meditation'}; %keep these between {}
     % a list of possible factors to be included, that can be removed if needed, and the interactions terms to explore
-    model.liquid_factors = {'music','sport','expect','music:meditation','expect:meditation'};
+    model.liquid_factors = {'music','sport','expect','music:meditation','expect:meditation'}; %keep these between {}
     % a list of potential model links
     model.links = {'log', 'identity'};
     % outliers/subjects to be removed - can be left empty
     model.exclude = [8,12]; 
     % no warnings - careful with that option
     model.warning_off = 1; 
+    % whether to use a GLM (0) or a GLME (1).
+    model.glme = 0; 
 
 % run the model
 mdls = all_glm(model);
@@ -146,12 +149,16 @@ Models are ranked by lowest AICc. In a glance, you can find the line of the mode
 Once you have a candidate, the next step is to check the validity of that candidate with diagnostics plots.
 
 ### display_model 
-formats the results in the command window for one model in the list and show diagnostic plots for that model
+Formats the results in the command window for one model in the list and show diagnostic plots for that model.
+The diagnostics are:
+* Scatterplot of residuals vs. fitted values - no fanning should be observed (fanning is an increase of residuals variability at larger fitted values)
+* Distribution of residuals - should be normal, indicated by a non-significant Kolmogorov-Smirnov test
+* Cook's distance for each observation
 
 #### Typical use
 ```matlab
 % display diagnostics and results
-display_model(mdls{1}) %plot model ranked 1 - you can select any other models by rank according to the results on the various indicators provided
+display_model(mdls{1}, model.glme) %plot model ranked 1 - you can select any other models by rank according to the results on the various indicators provided
 snapnow; %plot figure when publishing markdown code
 ```
 
@@ -196,7 +203,6 @@ plots the results for one model
 % add plots of results and save figures
 % there is an empty subplot that I like to fill with a figure showing the most interesting result, here a significant meditation group effect
 h=subplot(1,4,4);
-
 plot_group_effect(data.initial_work_mem, data.meditation, h, 'Meditation group', 'initial working memory performance', {'Meditators','Non-meditators'}, 0, model)
 
 % save the figure
@@ -204,7 +210,7 @@ saveas(gcf,fullfile(figure_path,'results.png'));
 snapnow; %plot figure when publishing markdown code
 ```
 ![a figure showing the group effect plot](example_figures/results.png)
-
+Note that the group effect plot code works only with a grouping variable with two levels (at the moment).
 For a continuous factor or an interaction relationship, you can use plot_covariate_effect or plot_interaction instead. The example below plots the effect of music practice in hours on our dependent variable.
 
 ```matlab
@@ -219,7 +225,7 @@ h=subplot(1,4,4);
 plot_interaction(data.Time, data.stereo,data.ageGroup, h, 'Age group (younger / older)','Task completion time (sec)', {'Monocular','Binocular'},mdls{1}, 1, model)
 ```
 ![a figure showing the interaction plot](example_figures/results_interaction.png)
-Note that the interaction plot code works only with a grouping variable with two levels.
+Note that the interaction plot code works only with a grouping variable with two levels (at the moment).
 
 ## Authors
 Adrien Chopin, 2023

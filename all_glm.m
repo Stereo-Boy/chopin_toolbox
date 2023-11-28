@@ -8,9 +8,10 @@ function mdls = all_glm(model)
 %   model.distribution = 'normal'; % its distribution among poisson, normal, gamma, inverse gaussian, binomial
 %   model.data = data; % a table with the data
 %   model.links = {'log', 'reciprocal','identity','-2','-3','probit','logit', 'loglog','comploglog'}; %  a list of possible link functions
+%   model.glme = 0; % whether to use a GLM (0) or a GLME (1).
 % Example of use:
-%           model.solid_factors = 'meditation';
-%           model.liquid_factors = {'music','sport','expect','music:meditation','sport:meditation','expect:meditation'};
+%           model.solid_factors = {'meditation'}; %keep these between {}
+%           model.liquid_factors = {'music','sport','expect','music:meditation','sport:meditation','expect:meditation'}; %keep these between {}
 %           model.data = data;
 %           model.max_nb_factors = 5;
 %           model.warning_off = 1;
@@ -18,6 +19,7 @@ function mdls = all_glm(model)
 %           model.distribution = 'normal';
 %           model.links = { 'identity'}; %   model.links = {'log', 'reciprocal','identity'};
 %           model.exclude = [8,12];
+%           model.glme = 1; %default 0
 %     mdls = all_glm(model);
 %     display_model(mdls{1})
 %     h=subplot(1,4,4); plot_group_effect(data.initial_work_mem, data.meditation, h, 'Meditation group', 'initial working memory performance', {'Meditators','Non-meditators'})
@@ -26,6 +28,7 @@ function mdls = all_glm(model)
 if isempty(model.solid_factors); skip_solid = 1; else; skip_solid = 0; end
 if isfield(model,'warning_off') || model.warning_off==0; end
 if isfield(model,'exclude') ; exclude = 1; else; exclude = 0; end
+if ~isfield(model,'glme') ; model.glme = 0; end
 if exclude % here I prefer to exclude the observations, rather than using the Exclude option in fitglm, otherwise, the excluded data are then wrongly reincorporated in the diagnostic plots.
    model.data(model.exclude,:) = []; 
 end
@@ -60,6 +63,9 @@ if skip==0
         for j=1:numel(this_mdl)
             formula = [formula,' + ', this_mdl{j}];
         end
+        if model.glme == 1 % This intend at finding all (1|factor) to move them at the end of the formula to avoid a weird bug with fitglme
+            formula = moveSubstringToEnd(formula);
+        end
         formulas{i}= formula;
     end
 end
@@ -71,14 +77,27 @@ model.links = cellfun(@get_distr,model.links,'UniformOutput',false);
 mdls = cell(size(formulas,1)*numel(model.links),1);
 mdl_formulas = mdls; mdl_links = mdls; mdl_aiccs = zeros(numel(mdls),1); mdl_r2_adj = zeros(numel(mdls),1); mdl_r2 = mdl_r2_adj; norm_res = mdls;
 try
+if model.glme==0
+    dispi('Running ',numel(formulas),' GLMs...');
+else
+    dispi('Running ',numel(formulas),' GLMEs...');
+end
 for i=1:size(formulas,1)
     for j=1:numel(model.links)
         idx = numel(model.links)*(i-1)+j;
-        mdl = fitglm(model.data,formulas{i},'Distribution',model.distribution,'Link',model.links{j});
+        if model.glme==0
+            mdl = fitglm(model.data,formulas{i},'Distribution',model.distribution,'Link',model.links{j});
+        else
+            mdl = fitglme(model.data,formulas{i},'Distribution',model.distribution,'Link',model.links{j});
+        end
         mdls{idx} = mdl;
         mdl_formulas{idx} = formulas{i};
         mdl_links{idx} = model.links{j};
-        mdl_aiccs(idx) = mdl.ModelCriterion.AICc;
+        if model.glme==0
+            mdl_aiccs(idx) = mdl.ModelCriterion.AICc;
+        else
+            mdl_aiccs(idx) = mdl.ModelCriterion.AIC; % AICc is not available for GLMEs, let's use AIC
+        end
         mdl_r2_adj(idx) = round(100.*mdl.Rsquared.Adjusted,1);
         mdl_r2(idx) = round(100.*mdl.Rsquared.Ordinary,1);
         if sum(isnan(mdl.Residuals.raw))==numel(mdl.Residuals.raw)
@@ -94,7 +113,11 @@ catch err
     keyboard
 end
 dispi('We tested ',numel(mdl_aiccs),' models.')
-models = sortrows(table((1:numel(mdl_aiccs))',mdl_formulas,mdl_links,mdl_aiccs,mdl_r2_adj,mdl_r2,norm_res,'VariableNames',{'Rank','formula','link','AICc','adj.R2(%)','R2(%)','norm.res.'}),'AICc');
+if model.glme==0
+    models = sortrows(table((1:numel(mdl_aiccs))',mdl_formulas,mdl_links,mdl_aiccs,mdl_r2_adj,mdl_r2,norm_res,'VariableNames',{'Rank','formula','link','AICc','adj.R2(%)','R2(%)','norm.res.'}),'AICc');
+else
+    models = sortrows(table((1:numel(mdl_aiccs))',mdl_formulas,mdl_links,mdl_aiccs,mdl_r2_adj,mdl_r2,norm_res,'VariableNames',{'Rank','formula','link','AIC','adj.R2(%)','R2(%)','norm.res.'}),'AIC');
+end
 mdls = mdls(models.Rank); %reorder mdls so it is in the same order as models
 models.Rank = (1:numel(mdl_aiccs))'; %make their rank increase too
 disp(models)
@@ -117,6 +140,23 @@ function link = get_distr(linkn)
             link = -2;
         case{'Loglog','loglog'}
             link = 'loglog';
+    end
+end
+
+function modifiedString = moveSubstringToEnd(inputString)
+    % Regular expression pattern to match '+ (' and everything until ')'
+    % This intend at finding all (1|factor) to move them at the end of the formula to avoid a weird bug with fitglme
+    pattern = '\+\s*\([^)]*\)';
+    
+    % Find all matches in the input string
+    matches = regexp(inputString, pattern, 'match');
+    
+    % Replace all matches with an empty string in the original string
+    modifiedString = regexprep(inputString, pattern, '');
+    
+    % Append the matched substrings at the end
+    for i = 1:length(matches)
+        modifiedString = [modifiedString ' ' matches{i}];
     end
 end
 

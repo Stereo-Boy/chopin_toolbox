@@ -16,7 +16,7 @@ function plot_interaction(dv, grouping_factor, covariate, handle, xlabell, ylabe
 %     'Age group (younger / older)','Task completion time (sec)', {'Monocular','Binocular'},mdls{1}, 1, model)  
 if ~exist('model','var'); model.exclude = []; end
 if ~exist('plotModel','var'); plotModel=0; end
-
+try
     % exclude outliers
     if ~isempty(model.exclude) 
        dv(model.exclude) = []; 
@@ -28,13 +28,23 @@ if ~exist('plotModel','var'); plotModel=0; end
     
     % plot for grouping_factor = first value
     x = covariate(grouping_factor==levels(1)); y =  dv(grouping_factor==levels(1));
-    p1=plot(handle,x,y,'b.'); hold on; y2 =  mdl.Fitted.Response(grouping_factor==levels(1)); 
+    p1=plot(handle,x,y,'b.'); hold on; 
+    if model.glme == 0 %glm
+        y2 =  mdl.Fitted.Response(grouping_factor==levels(1)); 
+    else %glme
+        y2 =  mdl.fitted; y2 = y2(grouping_factor==levels(1)); % in two steps to avoid a bug with model object methods
+    end
     if plotModel;  m1 = plot(1.05*x,y2,'bo'); end
     ab=robustfit(x,y2);plot(handle,sort(x),ab(2).*sort(x)+ab(1),'b-');
     
     % plot for grouping_factor = second value
     x = covariate(grouping_factor==levels(2)); y =  dv(grouping_factor==levels(2));
-    p2=plot(handle,x,y,'r.'); hold on; y2 =  mdl.Fitted.Response(grouping_factor==levels(2)); 
+     p2=plot(handle,x,y,'r.'); hold on;
+    if model.glme == 0 %glm
+        y2 =  mdl.Fitted.Response(grouping_factor==levels(2)); 
+    else %glme
+        y2 =  mdl.fitted; y2 = y2(grouping_factor==levels(2)); % in two steps to avoid a bug with model object methods
+    end
     if plotModel; m2 = plot(1.05*x,y2,'ro'); end
     ab=robustfit(x,y2); plot(handle,sort(x),ab(2).*sort(x)+ab(1),'r-')
     xlabel(xlabell); ylabel(ylabell);  
@@ -45,7 +55,11 @@ if ~exist('plotModel','var'); plotModel=0; end
     else
         legend([p1,p2],legendLabels);
     end
-    
     % plot x limits
     xlim([0.5,2.5])
+    
+catch err 
+    % DEBUGGING
+    % write rethrow(err) in the command window to know the error
+    keyboard
 end
