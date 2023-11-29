@@ -27,6 +27,11 @@ The following functions are used together to easily separate model selection fro
 * plot_group_effect/plot_covariate_effect/plot_interaction: plot the results easily for one model
 The following 'typical use' sections should be chained one with the other as a typical pipeline.
 
+### Warnings
+* As mentioned already, some stasticians consider that model estimation step is biasing the future hypothesis testing step and argue that you should have hypotheses and only tests them. I agree with that later part and recommend to use this toolbox only with factors that are parts of a very limited set of meaningful hypotheses.
+* Another point of concern is that it is highly debatable whether it is correct or not to compare models using different link functions using AIC. The statistic is based on the model likelihood, which is itself calculated differently depending on the link function. If you are OK with that conceptual risk, please move further.
+* When using GLM and GLME, many of the methods working well for linear regression become incorrect. Be aware of these limitations before starting.
+
 ### check_distrib_indep
 To visualize the shape of dependent variable distribution and test whether normal with Kolmogorov-Smirnov test.
 
@@ -75,11 +80,24 @@ Conclusion: no factor to exclude because of collinearity
 
 ### all_glm
 Automatically tests and ranks all GLMs/GLMEs as combinations of factors/interactions of factors/link functions.
-* you define a data structure, making sure categorical factors have the format 'categorical' (use the converting function categorical for that)
+* you define a data structure, making sure categorical group factors have the format 'categorical' (use the converting function categorical for that)
 * you define the dependent variable in data and its the distribution
+Note that:
+  * normal and inverse gaussian distributions are defined continuously on [-Inf, +Inf]
+  * binomial and poisson distributions are counts of events and are then integers defined on [0, +Inf]
+  * gamma distributions are defined continuously on ]0, +Inf]. I recommend to tranform your variable to X+eps if X is defined on [0, +Inf].
 * you define a maximum number of factors to include (as a rule of thumb, you need ~10 datapoints for each, interactions are considered as factors).
-* you define a list of liquid and solid factors: solid factors are always included in the list (can be empty), liquid are picked in combination with solid factors until you reach the maximum number of factors. Combinations with a number of factors inferior to the max are also included. Fixed effect factors should not be in parentheses.
-* you define potential model links between the dependend variable and the factors - only include links that make sense, otherwise it may result in errors. Potential links are: 'log', 'reciprocal','identity','-2','-3','probit','logit','loglog','comploglog'
+* you define a cell array of liquid and solid factors: 
+  * Solid factors are always included in the list (can be empty using {''}).
+  * Liquid are picked in combination with solid factors until you reach the maximum number of factors. Combinations with a number of factors inferior to the max are also included. 
+  * Fixed effect factors should not be in parentheses, random-effect factors should. 
+  * Interaction factors are expressed as factor1:factor2. Notation factor1*factor2 also includes main effects of factor1 and factor2. 
+  * Note that you can add squared factors for continuous ones (ex: 'factor^2').
+* you define potential model links between the dependend variable and the factors - only include links that make sense, otherwise it may result in errors. Potential links are: 'log', 'reciprocal','identity','-2','-3','probit','logit','loglog','comploglog'.
+  * log links require the dependent variable X to be defined on ]0, +Inf]. I recommend to tranform your variable to X+eps if X is defined on [0, +Inf].
+![a table figure showing the link functions](example_figures/links.png)
+I recommend to use the canonical link function corrresponding to your distribution whenever possible.
+![a table figure showing the canonical link functions](example_figures/canonical.png)
 * optionnally exclude some outlier observations (defined as their line number in the data)
 * optionnally have warnings off (better to keep them on to discover wrong link functions or wrong data - default is warnings on)
 * optionnally run a GLME: you will need at least one random variable, so as a solid factor, expressed as (1|factor). Note that the parentheses are crucial to define the random-effect factor.
@@ -104,8 +122,8 @@ Automatically tests and ranks all GLMs/GLMEs as combinations of factors/interact
     model.links = {'log', 'identity'};
     % outliers/subjects to be removed - can be left empty
     model.exclude = [8,12]; 
-    % no warnings - careful with that option
-    model.warning_off = 1; 
+    % no warnings if 1 - careful with that option
+    model.warning_off = 0; 
     % whether to use a GLM (0) or a GLME (1).
     model.glme = 0; 
 
@@ -150,11 +168,13 @@ We tested 30 models.
      29     {'initial_work_mem ~ 1 + meditation + expect + expect:meditation'          }    {'identity'}    23.462      16.3       21.4      {'yes'} 
      30     {'initial_work_mem ~ 1 + meditation + expect + expect:meditation'          }    {'log'     }    23.491      16.3       21.4      {'yes'} 
 ```
-Models are ranked by lowest AICc. In a glance, you can find the line of the model that satisfies the following conditions:
+Models are ranked by lowest AICc. Here we follow ref. [1] showing that AIC/AICc/BIC are better criterion than R2/adj.R2 for selecting among non-linear regression models.
+In a glance, you can find the line of the model that satisfies the following conditions:
 * low AICc
 * positive adjusted R^2
 * R^2 that is large enough for you to qualify as a useful model (note that you can also use R^2 to compare a GLM with a GLME)
 * Normality of residuals
+
 Once you have a candidate, the next step is to check the validity of that candidate with the diagnostics plots.
 
 ### display_model 
@@ -164,9 +184,9 @@ Formats the results in the command window for one model in the list and show dia
 * display diagnostic figures and tests
 
 The diagnostics are:
-* Scatterplot of residuals vs. fitted values - no fanning should be observed (fanning is an increase of residuals variability at larger fitted values)
+* Scatterplot of residuals vs. fitted values - no fanning should be observed (fanning is an increase of residuals variability at larger fitted values). In addition, there should be no relationship between residuals and fitted values. On these two points, ref. [3] argues that deviations are actually expected for some of the GLMs (e.g. Poisson regression or logistic regression) and that it should be no ground for model exclusion (use deviance residuals instead).
 * Distribution of residuals - should be normal, indicated by a non-significant Kolmogorov-Smirnov test (result displayed in the command window)
-* Cook's distance for each observation
+* Cook's distance for each observation: this shows how the model prediction depends on the value of a single observation - outliers have very different values compared to the others and a value above 1 [2].
 
 #### Typical use
 ```matlab
@@ -211,13 +231,42 @@ Residuals are normal
 ```
 ![a figure showing the diagnostics plot](example_figures/diagnostics.png)
 As you can see, the best model according to AICc shows 
-* no outlier (first plot of Cook's distance - no datapoint is both above 1 and far away from the other datapoints - personal criterion)
+* no outlier (first plot of Cook's distance - no datapoint is both above 1 and far away from the other datapoints)
 * a little bit of fanning: in other words, there is more variability of the residuals for larger fitted values. That could possibly be resolved by changing the distribution, the link function or transforming the dependent variable in log. 
 * normality of residuals (p = 0.64)
 * explain a good share of the variance (R^2 and adjusted R^2 - personal criterion)
 
-Now if you are happy with this model fit, you can decide to look at the stastitics. This model shows a significant effect of meditation and music factors on the dependent variable. This code does not allow yet to calculate effect sizes.
+Now if you are happy with this model fit, you can decide to look at the stastitics and interpret the results. This model shows a significant effect of meditation and music factors on the dependent variable. This code does not allow yet to calculate effect sizes.
 
+#### Model interpretation
+To interpret coefficients and effect sizes in a GLM, you need to understand the meaning of the coefficients, which depend on the link function and chosen distribution: 
+* with logit link (logistic regression), the coefficients represent the log-odds. So you can exponentiate the coefficients to get odds ratios. This can be interpreted as the factor by which the odds of the outcome increase (or decrease) for a one-unit change in the predictor.
+```matlab
+odds_ratios = exp(mdls{1}.Coefficients.Estimate); % mdls{1} is the best model in the list
+```
+* with a Poisson log regression, they represent the log of the expected count. So the exponential of the coefficients represents the multiplicative effect on the expected count.
+* log link with normal distribution: the coefficients can be interpreted as the percentage change in the expected value of the dependent variable for a one-unit change in the predictor.
+* In gamma distributions, only the location parameter is estimated and reflected in the coefficients, not the shape one.
+```matlab
+percentChangeByFactor = 100.*exp(mdls{1}.Coefficients.Estimate(2:end)); % mdls{1} is the best model in the list / we do not include intercept
+```
+Note 1: It is generally good to look at the literature ot understand how to interpret coefficients and how to extract effect sizes.
+Note 2: To obtain standardized coefficients: you can standardize your predictors before fitting the model. The resulting coefficients will then be in units of standard deviations.
+
+To interpret the importance of one specific factor in the model, one strategy is to compare R2 with and without the factor of interest.
+```matlab
+% to estimate the effect of meditation:
+model.solid_factors = {'sport'}; %keep these between {}
+model.liquid_factors = {''};
+model.links = {'log'};
+mdls_without_meditation = all_glm(model);
+r2_meditation = round(100.*(mdls{1}.Rsquared.Ordinary - mdls_without_meditation{1}.Rsquared.Ordinary),1);
+dispi('Effect of meditation (difference in R squared): ',r2_meditation,'% (',round(r2_meditation/mdls{1}.Rsquared.Ordinary,1),'% of total explained variance)')
+```
+For GLMs (not GLMEs), one can also estimate a pseudo R2 instead of the provided R2, following equation (8.9) in [4]:
+```matlab
+pseudoR2 = (mdls_intercept{1}.LogLikelihood-mdls{1}.LogLikelihood)/mdls_intercept{1}.LogLikelihood
+```
 ### plot_group_effect / plot_covariate_effect / plot_interaction
 Plots the results for one selected model. For these functions to work, make sure grouping factors have categorical format (using function categorical).
 
@@ -259,8 +308,15 @@ The code is mostly made of codes from other people:
 * Justin Theiss for check_files / check_folders functions
 * sumsqr from Mark Beale, 1-31-92 / Copyright 1992-2017 The MathWorks, Inc.
   
+## References
+[1] Spiess, A.-N., & Neumeyer, N. (2010). An evaluation of R2 as an inadequate measure for nonlinear models in pharmacological and biochemical research: a Monte Carlo approach. BMC Pharmacology, 10(1), 1–11.
+[2] Cook, R. Dennis; Weisberg, Sanford (1982). Residuals and Influence in Regression. New York, NY: Chapman & Hall. hdl:11299/37076. ISBN 0-412-24280-X.
+[3] Coxe, S., West, S. G., & Aiken, L. S. (2013). Generalized linear models. The Oxford handbook of quantitative methods, 2, 26-51.
+[4] Dobson, A. J., & Barnett, A. G. (2018). An introduction to generalized linear models. CRC press.
+
 ## Version History
-* Current version is 1.0
+* Current version is 1.1
+* Version 1.1 includes mixed-effect model estimation (GLME).
 * Version 1.0 includes various handy functions for manipulating files and data, more 'serious' functions for automatical stastistical analyses, a few stat tools and other handy functions for automatically plotting the data.
 
 ## License

@@ -1,7 +1,7 @@
 function mdls = all_glm(model)
 % This function tries to apply all combinations of factors to determine the best GLM (Generalized Linear Model) using model comparison.
 % It needs a structure (model) containing the following fields:
-%   model.solid_factors = {'name_of_factor_or_list'}; % a factor or a list of factors that are always included in the model (for the moment, works with only one - use '' for none)
+%   model.solid_factors = {'name_of_factor_or_list'}; % a factor or a list of factors that are always included in the model (use '' for none)
 %   model.liquid_factors =   {'name_factor1','name_factor2','name_factor1:name_factor2'}; %  a list of possible factors to be included, that can be removed if needed, and the interactions terms to explore
 %   model.max_nb_factors = 5; % the maximal nb of factors to explore in the model - as a rule of thumb, you need ~10 datapoints for each
 %   model.dv = 'dependent_variable'; % the name of the dependent variable
@@ -25,7 +25,6 @@ function mdls = all_glm(model)
 %     h=subplot(1,4,4); plot_group_effect(data.initial_work_mem, data.meditation, h, 'Meditation group', 'initial working memory performance', {'Meditators','Non-meditators'})
 %     saveas(gcf,fullfile(figure_path,'working_memory_initial_glm.png')); 
 
-if isempty(model.solid_factors{:}); skip_solid = 1; else; skip_solid = 0; end
 if isfield(model,'warning_off') || model.warning_off==0; end
 if isfield(model,'exclude') ; exclude = 1; else; exclude = 0; end
 if ~isfield(model,'glme') ; model.glme = 0; end
@@ -34,11 +33,13 @@ if exclude % here I prefer to exclude the observations, rather than using the Ex
 end
 rot_fact_nb = model.max_nb_factors - numel(model.solid_factors);
 skip=0;
-if skip_solid
-    formula_start = [model.dv,' ~ 1'];
-else
-    formula_start = [model.dv,' ~ 1 + ',model.solid_factors{1}];
+formula_start = [model.dv,' ~ 1'];
+for ii=1:numel(model.solid_factors)
+    if ~isempty(model.solid_factors{ii})
+        formula_start = [formula_start,' + ',model.solid_factors{ii}];
+    end
 end
+
 if rot_fact_nb>0 % generates a list of models with various liquid factors to test
     list_models = cell(1,1);
     n=1;
@@ -61,7 +62,9 @@ if skip==0
         formula = formula_start;
         this_mdl = list_models{i};
         for j=1:numel(this_mdl)
-            formula = [formula,' + ', this_mdl{j}];
+            if ~isempty(this_mdl{j})
+                formula = [formula,' + ', this_mdl{j}];
+            end
         end
         if model.glme == 1 % This intend at finding all (1|factor) to move them at the end of the formula to avoid a weird bug with fitglme
             formula = moveSubstringToEnd(formula);
