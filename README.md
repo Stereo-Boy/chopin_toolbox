@@ -79,9 +79,9 @@ Results obtained:
 Conclusion: no factor to exclude because of collinearity
 
 ### all_glm
-Automatically tests and ranks all GLMs/GLMEs as combinations of factors/interactions of factors/link functions.
-* you define a data structure, making sure categorical group factors have the format 'categorical' (use the converting function categorical for that)
-* you define the dependent variable in data and its the distribution
+Automatically tests and ranks all GLMs/GLMEs as combinations of factors/interactions of factors/link functions. This is the general procedure but there is a detailed case in typical use below.
+* you define a data table with your data, making sure categorical group factors have the format 'categorical' (use the converting function categorical for that)
+* you define the column name in data corresponding to the dependent variable, and its the distribution
 Note that:
   * normal and inverse gaussian distributions are defined continuously on [-Inf, +Inf]
   * binomial and poisson distributions are counts of events and are then integers defined on [0, +Inf]
@@ -89,10 +89,10 @@ Note that:
 * you define a maximum number of factors to include (as a rule of thumb, you need ~10 datapoints for each, interactions are considered as factors).
 * you define a cell array of liquid and solid factors: 
   * Solid factors are always included in the list (can be empty using {''}).
-  * Liquid are picked in combination with solid factors until you reach the maximum number of factors. Combinations with a number of factors inferior to the max are also included. 
-  * Fixed effect factors should not be in parentheses, random-effect factors should. 
+  * Liquid are picked in combination with solid factors until you reach the maximum number of factors (can be empty using {''}). Combinations with a number of factors inferior to the max are also included. 
+  * Fixed effect factors should NOT be in parentheses, random-effect factors should be. 
   * Interaction factors are expressed as factor1:factor2. Notation factor1*factor2 also includes main effects of factor1 and factor2. 
-  * Note that you can add squared factors for continuous ones (ex: 'factor^2').
+  * Note that you can add squared factors for continuous variables (ex: 'factor^2').
 * you define potential model links between the dependend variable and the factors - only include links that make sense, otherwise it may result in errors. Potential links are: 'log', 'reciprocal','identity','-2','-3','probit','logit','loglog','comploglog'.
   * log links require the dependent variable X to be defined on ]0, +Inf]. I recommend to tranform your variable to X+eps if X is defined on [0, +Inf].
 ![a table figure showing the link functions](example_figures/links.png)
@@ -101,7 +101,8 @@ I recommend to use the canonical link function corrresponding to your distributi
 * optionnally exclude some outlier observations (defined as their line number in the data)
 * optionnally have warnings off (better to keep them on to discover wrong link functions or wrong data - default is warnings on)
 * optionnally run a GLME: you will need at least one random variable, so as a solid factor, expressed as (1|factor). Note that the parentheses are crucial to define the random-effect factor.
-* run all the models and rank them
+* optionally decide for a multiple-comparison correction method among 'benjamini-hochberg' or 'bonferroni' (default 'none'). This will show adjusted p-values. It is only used in function display_model, and it assumes that the number of statistical tests is equal to the number of factors in the displayed model. If not correct, you can specify a different number of comparison in the optional field model.nb_tests.
+* run all_glm code
   
 #### Typical use
 ```matlab
@@ -178,10 +179,11 @@ In a glance, you can find the line of the model that satisfies the following con
 Once you have a candidate, the next step is to check the validity of that candidate with the diagnostics plots.
 
 ### display_model 
-Formats the results in the command window for one model in the list and show diagnostic plots for that model.
-* displays variable formats for the best model
-* displays best model's stats
-* display diagnostic figures and tests
+* displays variable formats for the best model in command window
+* displays best model's stats in command window
+* display diagnostic figures and tests in command window
+* display adjusted p-values in command window
+* display formatted hypothesis rejection in command window
 
 The diagnostics are:
 * Scatterplot of residuals vs. fitted values - no fanning should be observed (fanning is an increase of residuals variability at larger fitted values). In addition, there should be no relationship between residuals and fitted values. On these two points, ref. [3] argues that deviations are actually expected for some of the GLMs (e.g. Poisson regression or logistic regression) and that it should be no ground for model exclusion (use deviance residuals instead).
@@ -228,6 +230,15 @@ Adjusted R^2: 21.5%
 R^2: 24.9%
 Residuals: Kolmogorov test for normality (alpha 5%):  KS = 0.12, p = 0.4779
 Residuals are normal
+No adjustment for multiple comparisons
+         Name          tStat     DF     pValue      adj_pValue    H_reject  
+    ______________    _______    __    _________    __________    ________
+
+    {'meditation'}    -2.9457    45    0.0050876    0.0050876     true 
+    {'sport'     }    -1.7663    45     0.084127     0.084127     false
+
+Significant effect of meditation (t(45) = -2.95, adjusted p = 0.0050876)
+No significant effect of sport (t(45) = -1.77, adjusted p = 0.084127)
 ```
 ![a figure showing the diagnostics plot](example_figures/diagnostics.png)
 As you can see, the best model according to AICc shows 
@@ -299,6 +310,19 @@ plot_interaction(data.Time, data.stereo,data.ageGroup, h, 'Age group (younger / 
 ![a figure showing the interaction plot](example_figures/results_interaction.png)
 Note that the interaction plot code works only with a grouping variable with two levels (at the moment).
 
+## Benjamini-Hochberg procedure
+The Benjamini-Hochberg procedure is a method for controlling the False Discovery Rate (FDR) in multiple hypothesis testing. In the context of statistical hypothesis testing, when you are conducting multiple tests simultaneously, the likelihood of making at least one Type I error (rejecting a true null hypothesis) increases. The FDR is the expected proportion of false discoveries among all rejected hypotheses.
+
+Here is a step-by-step explanation of the Benjamini-Hochberg procedure:
+* Sort p-values: Begin by sorting the p-values obtained from your individual hypothesis tests in ascending order.
+* Assign ranks: Assign ranks to the sorted p-values. The smallest p-value gets a rank of 1, the second smallest gets a rank of 2, and so on.
+* Calculate critical value: Choose a pre-specified FDR level, denoted as alpha, which is the maximum acceptable proportion of false discoveries., typically 0.05. The critical value (c) is calculated as 
+    c = alpha*rc/m
+where rc is the rank of the largest p-value that still satisfies the condition p ≤ alpha*r/m for all equal or smaller ranks, and m is the total number of tests.
+* Reject hypotheses: Reject all null hypotheses corresponding to p-values smaller than or equal to the critical value c.
+
+By controlling the FDR, the Benjamini-Hochberg procedure allows you to balance between finding a sufficient number of true positives and minimizing the number of false positives among the rejected hypotheses. It's important to note that the Benjamini-Hochberg procedure assumes that the tests are independent or positively dependent. If there are strong negative dependencies, other procedures like the Benjamini-Yekutieli procedure may be more appropriate.
+
 ## Authors
 Adrien Chopin, 2023
 The code is mostly made of codes from other people:
@@ -309,13 +333,14 @@ The code is mostly made of codes from other people:
 * sumsqr from Mark Beale, 1-31-92 / Copyright 1992-2017 The MathWorks, Inc.
   
 ## References
-[1] Spiess, A.-N., & Neumeyer, N. (2010). An evaluation of R2 as an inadequate measure for nonlinear models in pharmacological and biochemical research: a Monte Carlo approach. BMC Pharmacology, 10(1), 1–11.
-[2] Cook, R. Dennis; Weisberg, Sanford (1982). Residuals and Influence in Regression. New York, NY: Chapman & Hall. hdl:11299/37076. ISBN 0-412-24280-X.
-[3] Coxe, S., West, S. G., & Aiken, L. S. (2013). Generalized linear models. The Oxford handbook of quantitative methods, 2, 26-51.
-[4] Dobson, A. J., & Barnett, A. G. (2018). An introduction to generalized linear models. CRC press.
+* [1] Spiess, A.-N., & Neumeyer, N. (2010). An evaluation of R2 as an inadequate measure for nonlinear models in pharmacological and biochemical research: a Monte Carlo approach. BMC Pharmacology, 10(1), 1–11.
+* [2] Cook, R. Dennis; Weisberg, Sanford (1982). Residuals and Influence in Regression. New York, NY: Chapman & Hall. hdl:11299/37076. ISBN 0-412-24280-X.
+* [3] Coxe, S., West, S. G., & Aiken, L. S. (2013). Generalized linear models. The Oxford handbook of quantitative methods, 2, 26-51.
+* [4] Dobson, A. J., & Barnett, A. G. (2018). An introduction to generalized linear models. CRC press.
 
 ## Version History
-* Current version is 1.1
+* Current version is 1.2
+* Version 1.2  allows for multiple comparison correction (adjusted p-values)
 * Version 1.1 includes mixed-effect model estimation (GLME).
 * Version 1.0 includes various handy functions for manipulating files and data, more 'serious' functions for automatical stastistical analyses, a few stat tools and other handy functions for automatically plotting the data.
 

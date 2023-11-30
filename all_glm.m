@@ -9,6 +9,8 @@ function mdls = all_glm(model)
 %   model.data = data; % a table with the data
 %   model.links = {'log', 'reciprocal','identity','-2','-3','probit','logit', 'loglog','comploglog'}; %  a list of possible link functions
 %   model.glme = 0; % whether to use a GLM (0) or a GLME (1).
+%   model.p_adjust_method = 'benjamini-hochberg'; % optional - method for adjusting p for multiple comparison - default 'none', other options are 'benjamini-hochberg', 'bonferroni' - optionnaly, you can enter the nb of hypothesis tests in model.nb_tests - actually used in display_model only
+%   model.nb_tests = 3; % optional - nb of hypothesis tests used for p adjustment - if not specified, the nb of tests is the nb of factors in the best model - actually used in display_model only
 % Example of use:
 %           model.solid_factors = {'meditation'}; %keep these between {}
 %           model.liquid_factors = {'music','sport','expect','music:meditation','sport:meditation','expect:meditation'}; %keep these between {}
@@ -21,13 +23,15 @@ function mdls = all_glm(model)
 %           model.exclude = [8,12];
 %           model.glme = 1; %default 0
 %     mdls = all_glm(model);
-%     display_model(mdls{1})
+%     display_model(mdls{1}, model)
 %     h=subplot(1,4,4); plot_group_effect(data.initial_work_mem, data.meditation, h, 'Meditation group', 'initial working memory performance', {'Meditators','Non-meditators'})
 %     saveas(gcf,fullfile(figure_path,'working_memory_initial_glm.png')); 
 
 if isfield(model,'warning_off') || model.warning_off==0; end
 if isfield(model,'exclude') ; exclude = 1; else; exclude = 0; end
 if ~isfield(model,'glme') ; model.glme = 0; end
+if ~isfield(model,'p_adjust_method'); model.p_adjust_method = 'none'; end
+
 if exclude % here I prefer to exclude the observations, rather than using the Exclude option in fitglm, otherwise, the excluded data are then wrongly reincorporated in the diagnostic plots.
    model.data(model.exclude,:) = []; 
 end
@@ -81,9 +85,9 @@ mdls = cell(size(formulas,1)*numel(model.links),1);
 mdl_formulas = mdls; mdl_links = mdls; mdl_aiccs = zeros(numel(mdls),1); mdl_r2_adj = zeros(numel(mdls),1); mdl_r2 = mdl_r2_adj; norm_res = mdls;
 try
 if model.glme==0
-    dispi('Running ',numel(formulas),' GLMs...');
+    dispi('Running ',numel(formulas).*numel(model.links),' GLMs...');
 else
-    dispi('Running ',numel(formulas),' GLMEs...');
+    dispi('Running ',numel(formulas).*numel(model.links),' GLMEs...');
 end
 for i=1:size(formulas,1)
     for j=1:numel(model.links)
@@ -112,9 +116,7 @@ for i=1:size(formulas,1)
         end
     end
 end
-catch err
-    keyboard
-end
+
 dispi('We tested ',numel(mdl_aiccs),' models.')
 if model.glme==0
     models = sortrows(table((1:numel(mdl_aiccs))',mdl_formulas,mdl_links,mdl_aiccs,mdl_r2_adj,mdl_r2,norm_res,'VariableNames',{'Rank','formula','link','AICc','adj.R2(%)','R2(%)','norm.res.'}),'AICc');
@@ -125,6 +127,9 @@ mdls = mdls(models.Rank); %reorder mdls so it is in the same order as models
 models.Rank = (1:numel(mdl_aiccs))'; %make their rank increase too
 disp(models)
 
+catch err
+    keyboard
+end
 end
 
 function link = get_distr(linkn)
