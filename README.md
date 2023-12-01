@@ -1,8 +1,8 @@
 # chopin toolbox
-A toolbox mostly for statistical models and formating.
+A toolbox for automating the use of GLM/GLME statistical models
 
 ## Description
-The toolbox contains various handy functions for manipulating files and data, more 'serious' functions for automatical stastistical analyses, a few stat tools and other handy functions for automatically plotting the data.
+The toolbox contains various for automatical stastistical analyses, showing diagnostics, formating, a few stat tools and other handy functions for automatically plotting the data. Helper functions include functions to manipulate files and data.
 
 ## Getting Started
 ### Dependencies
@@ -11,7 +11,7 @@ The toolbox contains various handy functions for manipulating files and data, mo
 
 ### Installing
 * download the code
-* add its containing folder to your matlab search path
+* add its root folder to your matlab search path with all the inside folders
 Example: 
 ```matlab
 addpath(genpath('C:\Users\Adrian\Desktop\chopin_toolbox'))
@@ -24,7 +24,8 @@ The following functions are used together to easily separate model selection fro
 * corrplot2 to check collinearity between factors
 * all_glm automatically tests and ranks all GLMs/GLMEs as combinations of factors/interactions of factors/link functions
 * display_model formats the results in the command window for one model in the list and show diagnostic plots for that model
-* plot_group_effect/plot_covariate_effect/plot_interaction: plot the results easily for one model
+* adjust_p_benjamini_hochberg: adjust p-values when using multiple separate models
+* plot_group_effect/plot_covariate_effect/plot_interaction/plot_triple_interaction: plot the results easily for one model
 The following 'typical use' sections should be chained one with the other as a typical pipeline.
 
 ### Warnings
@@ -351,13 +352,15 @@ Note that the interaction plot code works only with a grouping variable with two
 This one below looks at a triple interaction between age group, hands and stereo condition for the Speed_Metric_T_Hands dependent variable.
 ```matlab
 h=subplot(1,4,4);
-plot_triple_interaction(data_Hands.Speed_Metric_T_Hands, data_Hands.ageGroup, data_Hands.stereo, data_Hands.hand, 'Age group', 'Smoothness (speed metrics)', [], [], model) 
+plot_triple_interaction(data.duration, data.load, data.stereo, 'Cognitive Load', 'Duration (s)', [], [], model) 
 ```
+![a figure showing a triple interaction plot](example_figures/triple_interaction.png)
 
-## Interpretation of AIC
+## Some additional information
+### Interpretation of AIC
 As a rule of thumb, models with an AIC difference less than 2 are considered to have ‘substantial’ support, models with an AIC difference between 4 and 7 to have ‘considerably less’ support, and models with an AIC difference greater than 10 to have ‘essentially no’ support [5]. Be sure to also read Burnham, Anderson, and Huyvaert et al., 2011 paper.
 
-## Benjamini-Hochberg procedure
+### Benjamini-Hochberg procedure
 The Benjamini-Hochberg procedure is a method for controlling the False Discovery Rate (FDR) in multiple hypothesis testing. In the context of statistical hypothesis testing, when you are conducting multiple tests simultaneously, the likelihood of making at least one Type I error (rejecting a true null hypothesis) increases. The FDR is the expected proportion of false discoveries among all rejected hypotheses.
 
 Here is a step-by-step explanation of the Benjamini-Hochberg procedure:
