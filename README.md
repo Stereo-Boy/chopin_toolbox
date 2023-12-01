@@ -351,7 +351,7 @@ Note that the interaction plot code works only with a grouping variable with two
 
 This one below looks at a triple interaction between age group, hands and stereo condition for the Speed_Metric_T_Hands dependent variable.
 ```matlab
-h=subplot(1,4,4);
+h=subplot(1,1,1);
 plot_triple_interaction(data.duration, data.load, data.stereo, 'Cognitive Load', 'Duration (s)', [], [], model) 
 ```
 ![a figure showing a triple interaction plot](example_figures/triple_interaction.png)
