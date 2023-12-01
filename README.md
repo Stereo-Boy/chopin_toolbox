@@ -101,7 +101,7 @@ I recommend to use the canonical link function corrresponding to your distributi
 * optionnally exclude some outlier observations (defined as their line number in the data)
 * optionnally have warnings off (better to keep them on to discover wrong link functions or wrong data - default is warnings on)
 * optionnally run a GLME: you will need at least one random variable, so as a solid factor, expressed as (1|factor). Note that the parentheses are crucial to define the random-effect factor.
-* optionally decide for a multiple-comparison correction method among 'benjamini-hochberg' or 'bonferroni' (default 'none'). This will show adjusted p-values. It is only used in function display_model, and it assumes that the number of statistical tests is equal to the number of factors in the displayed model. If not correct, you can specify a different number of comparison in the optional field model.nb_tests.
+* optionally decide for a multiple-comparison correction method among 'benjamini-hochberg' (see section Benjamini-Hochberg procedure below for more information) or 'bonferroni' (default 'none'). This will show adjusted p-values. It is only used in function display_model, and it assumes that the number of statistical tests is equal to the number of factors in the displayed model. If not correct, you can specify a different number of comparison in the optional field model.nb_tests.
 * run all_glm code
   
 #### Typical use
@@ -169,7 +169,7 @@ We tested 30 models.
      29     {'initial_work_mem ~ 1 + meditation + expect + expect:meditation'          }    {'identity'}    23.462      16.3       21.4      {'yes'} 
      30     {'initial_work_mem ~ 1 + meditation + expect + expect:meditation'          }    {'log'     }    23.491      16.3       21.4      {'yes'} 
 ```
-Models are ranked by lowest AICc. Here we follow ref. [1] showing that AIC/AICc/BIC are better criterion than R2/adj.R2 for selecting among non-linear regression models.
+Models are ranked by lowest AICc. Here we follow ref. [1] showing that AIC/AICc/BIC are better criterion than R2/adj.R2 for selecting among non-linear regression models. See section interpretation of AIC below for more information.
 In a glance, you can find the line of the model that satisfies the following conditions:
 * low AICc
 * positive adjusted R^2
@@ -249,8 +249,43 @@ As you can see, the best model according to AICc shows
 
 Now if you are happy with this model fit, you can decide to look at the stastitics and interpret the results. This model shows a significant effect of meditation and music factors on the dependent variable. This code does not allow yet to calculate effect sizes.
 
-#### Model interpretation
-To interpret coefficients and effect sizes in a GLM, you need to understand the meaning of the coefficients, which depend on the link function and chosen distribution: 
+### Model interpretation
+To interpret statistical analyses, you will need to:
+* interpret which factor is significant, possibly after correcting for multiple comparisons: use for example adjust_p_benjamini_hochberg 
+* interpret the coefficients
+* interpret forms of effect sizes
+* plot the data to see the direction of the effects: use for example plot_group_effect / plot_covariate_effect / plot_interaction / plot_triple_interaction
+
+#### Interpret significance
+* Find how many hypotheses that you have planned are actually tested in your different models. 
+* Correct for that number of comparisons using display_model with option model.p_adjust_method ('bonferroni' or 'benjamini-hochberg') and model.nb_tests.
+* If you are using 'benjamini-hochberg' (see dedicated section below) and have several different models, you may want to correct for all the comparisons in all the models. In that case, use adjust_p_benjamini_hochberg as follows:
+```matlab
+ model.p_adjust_method = 'none';
+ table_stats_1 = display_model(mdls1{1});
+ table_stats_2 = display_model(mdls2{1});
+ adjust_p_benjamini_hochberg([table_stats_1; table_stats_2])
+```
+
+Possible results: you can see the adjusted pValue for factors of different analyses/dv, here Mean_Velocity_T_Hands and Speed_Metric_T_Hands.
+```matlab
+Adjustment for multiple comparisons: method of Benjamini-Hochberg
+                   Name                    Estimate      tStat     DF      pValue      adj_pValue    H0_reject    adj_alpha
+    ___________________________________    _________    _______    ___    _________    __________    _________    _________
+
+    {'Mean_Velocity_T_Hands: trial'   }    0.0030797     3.2325    508    0.0013068    0.0078409         1        0.0083333
+    {'Mean_Velocity_T_Hands: load_S'  }     0.013078     2.9954    508    0.0028745    0.0086234         1         0.016667
+    {'Speed_Metric_T_Hands: load_S'   }    0.0066417     2.4715    510     0.013781     0.027562         1            0.025
+    {'Mean_Velocity_T_Hands: stereo_M'}    -0.010249    -2.3475    508     0.019281     0.028922         1         0.033333
+
+Significant effect of Mean_Velocity_T_Hands: trial (t(508) = 3.23, adjusted p = 0.0078409)
+Significant effect of Mean_Velocity_T_Hands: load_S (t(508) = 3, adjusted p = 0.0086234)
+Significant effect of Speed_Metric_T_Hands: load_S (t(510) = 2.47, adjusted p = 0.027562)
+Significant effect of Mean_Velocity_T_Hands: stereo_M (t(508) = -2.35, adjusted p = 0.028922)
+```
+
+#### Interpret coefficients 
+To interpret coefficients in a GLM, you need to understand the meaning of the coefficients, which depend on the link function and chosen distribution: 
 * with logit link (logistic regression), the coefficients represent the log-odds. So you can exponentiate the coefficients to get odds ratios. This can be interpreted as the factor by which the odds of the outcome increase (or decrease) for a one-unit change in the predictor.
 ```matlab
 odds_ratios = exp(mdls{1}.Coefficients.Estimate); % mdls{1} is the best model in the list
@@ -264,9 +299,10 @@ percentChangeByFactor = 100.*exp(mdls{1}.Coefficients.Estimate(2:end)); % mdls{1
 Note 1: It is generally good to look at the literature ot understand how to interpret coefficients and how to extract effect sizes.
 Note 2: To obtain standardized coefficients: you can standardize your predictors before fitting the model. The resulting coefficients will then be in units of standard deviations.
 
-To interpret the importance of one specific factor in the model, one strategy is to compare R2 with and without the factor of interest.
+#### Interpret effect sizes 
+To interpret the importance of one specific factor in the model (effect size equivalent), one possible strategy is to compare R2 with and without the factor of interest. Please do due diligence on the question before doing that. For example:
 ```matlab
-% to estimate the effect of meditation:
+% to estimate the effect of meditation, create a second model without meditation:
 model.solid_factors = {'sport'}; %keep these between {}
 model.liquid_factors = {''};
 model.links = {'log'};
@@ -274,10 +310,12 @@ mdls_without_meditation = all_glm(model);
 r2_meditation = round(100.*(mdls{1}.Rsquared.Ordinary - mdls_without_meditation{1}.Rsquared.Ordinary),1);
 dispi('Effect of meditation (difference in R squared): ',r2_meditation,'% (',round(r2_meditation/mdls{1}.Rsquared.Ordinary,1),'% of total explained variance)')
 ```
+
 For GLMs (not GLMEs), one can also estimate a pseudo R2 instead of the provided R2, following equation (8.9) in [4]:
 ```matlab
 pseudoR2 = (mdls_intercept{1}.LogLikelihood-mdls{1}.LogLikelihood)/mdls_intercept{1}.LogLikelihood
 ```
+
 ### plot_group_effect / plot_covariate_effect / plot_interaction / plot_triple_interaction
 Plots the results for one selected model. For these functions to work, make sure grouping factors have categorical format (using function categorical).
 
@@ -316,6 +354,9 @@ h=subplot(1,4,4);
 plot_triple_interaction(data_Hands.Speed_Metric_T_Hands, data_Hands.ageGroup, data_Hands.stereo, data_Hands.hand, 'Age group', 'Smoothness (speed metrics)', [], [], model) 
 ```
 
+## Interpretation of AIC
+As a rule of thumb, models with an AIC difference less than 2 are considered to have ‘substantial’ support, models with an AIC difference between 4 and 7 to have ‘considerably less’ support, and models with an AIC difference greater than 10 to have ‘essentially no’ support [5]. Be sure to also read Burnham, Anderson, and Huyvaert et al., 2011 paper.
+
 ## Benjamini-Hochberg procedure
 The Benjamini-Hochberg procedure is a method for controlling the False Discovery Rate (FDR) in multiple hypothesis testing. In the context of statistical hypothesis testing, when you are conducting multiple tests simultaneously, the likelihood of making at least one Type I error (rejecting a true null hypothesis) increases. The FDR is the expected proportion of false discoveries among all rejected hypotheses.
 
@@ -343,10 +384,12 @@ The code is mostly made of codes from other people:
 * [2] Cook, R. Dennis; Weisberg, Sanford (1982). Residuals and Influence in Regression. New York, NY: Chapman & Hall. hdl:11299/37076. ISBN 0-412-24280-X.
 * [3] Coxe, S., West, S. G., & Aiken, L. S. (2013). Generalized linear models. The Oxford handbook of quantitative methods, 2, 26-51.
 * [4] Dobson, A. J., & Barnett, A. G. (2018). An introduction to generalized linear models. CRC press.
+* [5] Burnham, K.P., and D.R. Anderson (2004). Multimodel Inference: Understanding AIC and BIC in Model Selection. Sociological Methods & Research 33: 261–304. https://doi.org/10.1177/0049124104268644. 
 
 ## Version History
-* Current version is 1.2
-* Version 1.2  allows for multiple comparison correction (adjusted p-values)
+* Current version is 1.3
+* Version 1.3 allows a more flexible to use Benjamini-Hochberg correction for analyses spanning multiple models
+* Version 1.2 allows for multiple comparison correction (adjusted p-values)
 * Version 1.1 includes mixed-effect model estimation (GLME).
 * Version 1.0 includes various handy functions for manipulating files and data, more 'serious' functions for automatical stastistical analyses, a few stat tools and other handy functions for automatically plotting the data.
 

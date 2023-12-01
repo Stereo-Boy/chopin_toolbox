@@ -7,10 +7,10 @@ if ~exist('model','var') || isfield(model,'glme')==0; model.glme = 0; end
 if ~exist('model','var') || isfield(model,'p_adjust_method')==0; model.p_adjust_method = 'none'; end % default 'none', other options are 'benjamini-hochberg', 'bonferroni'
 if ~exist('model','var') || isfield(model,'nb_tests')==0; model.nb_tests = numel(mdl.CoefficientNames)-1; end % minus 1 because it assumes intercept is included
 try
-    disp('Summary of variable formats in the model')
+    disp('Summary of variable formats in best model')
     disp(mdl.VariableInfo(mdl.VariableInfo.InModel==1,:))
     
-    disp('Summary of the model')
+    disp('Summary of best model')
     disp(mdl)
     if model.glme==1 % this is a GLME
         dispi('AIC: ',mdl.ModelCriterion.AIC)
