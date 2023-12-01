@@ -6,17 +6,17 @@ function plot_covariate_effect(dv, covariate, handle, xlabell, ylabell, loggX, l
 % ylabell, label for y axis
 % loggX, if 1, x is in log scale, 0 by default, optional
 % loggY, if 1, y is in log scale, 0 by default, optional
-% mdl, the mdl structure, optional
+% mdl, the mdl structure (useful only if plotting model predictions with plotModel)
 % plotModel, 0 or 1, if 1, will use data predictions in mdl structure and plot the model data, optional
 % model is used to remove flagged outliers from the data
 % ex of usage: 
 % h=subplot(1,4,1); 
-% plot_covariate_effect(data.initial_orient, data.music, h,...
-%   'Music practice (hours)', 'initial orientation threshold', 0, 0, mdls{1},1, model)
+% plot_covariate_effect(data.initial_orient, data.music, h, 'Music practice (hours)', 'initial orientation threshold', 0, 0, mdls{1},1, model)
 if ~exist('model','var'); model.exclude = []; plotModel=0; end
 if ~exist('loggX','var'); loggX=0; end
 if ~exist('loggY','var'); loggY=0; end
 if ~exist('plotModel','var'); plotModel=0; end
+if ~exist('mdl','var')||isempty(mdl); plotModel=0; end
 
     x = covariate; y =  dv;
     % exclude outliers
@@ -25,8 +25,7 @@ if ~exist('plotModel','var'); plotModel=0; end
        y(model.exclude) = []; 
     end
     plot(handle,x,y,'k.'); hold on; 
-    y2 = zeros(size(x));
-    if exist('mdl','var') && plotModel==1
+    if plotModel==1
         if model.glme == 0 %glm
             y2 =  mdl.Fitted.Response;
         else % glme

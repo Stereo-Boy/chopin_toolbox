@@ -3,15 +3,16 @@ function plot_group_effect(dv, grouping_factor, handle, xlabell, ylabell, xtickl
 % handle: handle of an existing figure plot or subplot
 % xlabell, label for x axis
 % ylabell, label for y axis
-% xticklabelss, label for grouping variable on x axis
+% optional - xticklabelss, labels for grouping variable on x axis (if empty or not provided, read them from grouping_factor levels directly)
 % logg, if 1, y is in log scale, 0 by default
 % model is used to remove flagged outliers from the data
 % ex of usage: 
 % h=subplot(1,4,4); 
-% plot_group_effect(data.final_orient, data.meditation, h, 'Meditation group',...
-%    'final orientation threshold', {'Meditators','Non-meditators'},1, model)
+% plot_group_effect(data.final_orient, data.meditation, h, 'Meditation group', 'final orientation threshold', '',0, model)
 if ~exist('logg','var'); logg=0; end
 if ~exist('model','var'); model.exclude = []; end
+factor_levels = unique(grouping_factor);
+if ~exist('xticklabelss','var')||isempty(xticklabelss); xticklabelss = {char(factor_levels(1)),char(factor_levels(2))}; end
 
     % exclude outliers
     if ~isempty(model.exclude) 
@@ -19,7 +20,6 @@ if ~exist('model','var'); model.exclude = []; end
        grouping_factor(model.exclude) = []; 
     end
     
-    factor_levels = unique(grouping_factor);
     nbLevels = numel(factor_levels);
     colors = {'b','r','g','m','c','y'};
     medians=nan(1,nbLevels);

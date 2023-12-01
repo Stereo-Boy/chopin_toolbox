@@ -126,7 +126,7 @@ end
 mdls = mdls(models.Rank); %reorder mdls so it is in the same order as models
 models.Rank = (1:numel(mdl_aiccs))'; %make their rank increase too
 disp(models)
-
+disp(' ------------------------------------------------------------------------------- ')
 catch err
     keyboard
 end
