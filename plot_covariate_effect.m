@@ -17,7 +17,7 @@ if ~exist('loggX','var'); loggX=0; end
 if ~exist('loggY','var'); loggY=0; end
 if ~exist('plotModel','var'); plotModel=0; end
 if ~exist('mdl','var')||isempty(mdl); plotModel=0; end
-
+try
     x = covariate; y =  dv;
     % exclude outliers
     if ~isempty(model.exclude)
@@ -34,14 +34,18 @@ if ~exist('mdl','var')||isempty(mdl); plotModel=0; end
     else
         y2 = zeros(size(x)); 
     end
+    ab=robustfit(x,y); 
+        plot(handle,sort(x),ab(2).*sort(x)+ab(1),'r-')
     if plotModel 
         plot(x,y2,'ro'); 
         ab=robustfit(x,y2); 
-        plot(handle,sort(x),ab(2).*sort(x)+ab(1),'r-');
+        plot(handle,sort(x),ab(2).*sort(x)+ab(1),'r--');
         line([x,x]',[y,y2]','Color','r');
     end
     xlabel(xlabell); ylabel(ylabell);
     xlim([min(x).*0.95,max(x).*1.05]);
     if loggX==1; set(gca, 'XScale', 'log'); end
     if loggY==1; set(gca, 'YScale', 'log'); end
+catch err
+    keyboard
 end

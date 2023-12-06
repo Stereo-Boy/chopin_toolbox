@@ -16,7 +16,8 @@ function plot_interaction(dv, grouping_factor, covariate, handle, xlabell, ylabe
 if ~exist('model','var'); model.exclude = []; end
 if ~exist('plotModel','var'); plotModel=0; end
 if ~exist('mdl','var')||isempty(mdl); plotModel=0; end
-if ~exist('legendLabels','var')||isempty(legendLabels); legendLabels = {char(grouping_factor(1)),char(grouping_factor(2))}; end
+levels = unique(grouping_factor);
+if ~exist('legendLabels','var')||isempty(legendLabels); legendLabels = {char(levels(1)),char(levels(2))}; end
 
 try
     % exclude outliers
@@ -24,9 +25,7 @@ try
        dv(model.exclude) = []; 
        grouping_factor(model.exclude) = []; 
        covariate(model.exclude) = []; 
-    end
-    
-    levels = unique(grouping_factor);
+    end 
     
     % plot for grouping_factor = first value
     x = covariate(grouping_factor==levels(1)); y =  dv(grouping_factor==levels(1));
@@ -40,9 +39,11 @@ try
         end
         m1 = plot(x,y2,'bo'); 
     end
-    medians(1) = nanmedian(y(x==xlevels(1))); medians(2) = nanmedian(y(x==xlevels(2)));
-    plot(handle,xlevels,medians,'b-');
-    
+   if numel(xlevels)<=2
+        medians(1) = nanmedian(y(x==xlevels(1))); medians(2) = nanmedian(y(x==xlevels(2)));
+        plot(handle,xlevels,medians,'b-');
+   end
+   
     % plot for grouping_factor = second value
     x = covariate(grouping_factor==levels(2)); y =  dv(grouping_factor==levels(2));
     xlevels = unique(x);
@@ -55,9 +56,12 @@ try
         end
         m2 = plot(x,y2,'ro'); 
     end
-    xlabel(xlabell); ylabel(ylabell);  xticklabels(xlevels);
-    medians(1) = nanmedian(y(x==xlevels(1))); medians(2) = nanmedian(y(x==xlevels(2)));
-    plot(handle,xlevels,medians,'r-');
+    xlabel(xlabell); ylabel(ylabell);  
+    if numel(xlevels)<=2
+        xticklabels(xlevels);
+        medians(1) = nanmedian(y(x==xlevels(1))); medians(2) = nanmedian(y(x==xlevels(2)));
+        plot(handle,xlevels,medians,'r-');
+    end
     
     % plot legend
     if plotModel
