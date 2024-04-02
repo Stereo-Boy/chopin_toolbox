@@ -32,5 +32,11 @@ if ~exist('xticklabelss','var')||isempty(xticklabelss); xticklabelss = {char(fac
     xticks(1:nbLevels);xticklabels(xticklabelss); 
     xlabel(xlabell); ylabel(ylabell); 
     xlim([0.5,nbLevels+0.5]);
-    if logg==1; set(gca, 'YScale', 'log'); end
+    if logg==1 
+        set(gca, 'YScale', 'log'); 
+    else
+        % Set the minimum y to 0 and keep the maximum
+        c = ylim(); % retrieve current axis limits
+        ylim([0 c(2)]);
+    end
 end

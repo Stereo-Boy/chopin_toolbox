@@ -45,7 +45,13 @@ try
     xlabel(xlabell); ylabel(ylabell);
     xlim([min(x).*0.95,max(x).*1.05]);
     if loggX==1; set(gca, 'XScale', 'log'); end
-    if loggY==1; set(gca, 'YScale', 'log'); end
+    if loggY==1
+        set(gca, 'YScale', 'log')
+    else
+        % Set the minimum y to 0 and keep the maximum
+        c = ylim(); % retrieve current axis limits
+        ylim([0 c(2)]);
+    end
 catch err
     keyboard
 end

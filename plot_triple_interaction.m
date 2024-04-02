@@ -66,6 +66,9 @@ end
         else
             plot(xlevels,medians,'r-'); 
         end
+        % Set the minimum y to 0 and keep the maximum
+        c = ylim(); % retrieve current axis limits
+        ylim([0 c(2)]);
     end
     
 end

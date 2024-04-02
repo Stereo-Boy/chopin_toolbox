@@ -69,6 +69,11 @@ try
     else
         legend([p1,p2],legendLabels);
     end
+
+    % Set the minimum y to 0 and keep the maximum
+    c = ylim(); % retrieve current axis limits
+    ylim([0 c(2)]);
+
 catch err 
     % DEBUGGING
     % write rethrow(err) in the command window to know the error
