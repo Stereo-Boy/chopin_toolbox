@@ -1,4 +1,4 @@
-function mdls = all_glm(model)
+function mdls = all_glm(model, verbose)
 % This function tries to apply all combinations of factors to determine the best GLM (Generalized Linear Model) using model comparison.
 % It needs a structure (model) containing the following fields:
 %   model.solid_factors = {'name_of_factor_or_list'}; % a factor or a list of factors that are always included in the model (use '' for none)
@@ -31,6 +31,7 @@ if isfield(model,'warning_off') || model.warning_off==0; end
 if isfield(model,'exclude') ; exclude = 1; else; exclude = 0; end
 if ~isfield(model,'glme') ; model.glme = 0; end
 if ~isfield(model,'p_adjust_method'); model.p_adjust_method = 'none'; end
+if ~exist('verbose','var')||isempty(verbose); verbose = 1; end
 
 if exclude % here I prefer to exclude the observations, rather than using the Exclude option in fitglm, otherwise, the excluded data are then wrongly reincorporated in the diagnostic plots.
    model.data(model.exclude,:) = []; 
@@ -84,10 +85,12 @@ model.links = cellfun(@get_distr,model.links,'UniformOutput',false);
 mdls = cell(size(formulas,1)*numel(model.links),1);
 mdl_formulas = mdls; mdl_links = mdls; mdl_aiccs = zeros(numel(mdls),1); mdl_r2_adj = zeros(numel(mdls),1); mdl_r2 = mdl_r2_adj; norm_res = mdls;
 try
-if model.glme==0
-    dispi('Running ',numel(formulas).*numel(model.links),' GLMs...');
-else
-    dispi('Running ',numel(formulas).*numel(model.links),' GLMEs...');
+if verbose==1
+    if model.glme==0
+        dispi('Running ',numel(formulas).*numel(model.links),' GLMs...');
+    else
+        dispi('Running ',numel(formulas).*numel(model.links),' GLMEs...');
+    end
 end
 for i=1:size(formulas,1)
     for j=1:numel(model.links)
@@ -117,7 +120,9 @@ for i=1:size(formulas,1)
     end
 end
 
-dispi('We tested ',numel(mdl_aiccs),' models.')
+if verbose==1
+    dispi('We tested ',numel(mdl_aiccs),' models.')
+end
 if model.glme==0
     models = sortrows(table((1:numel(mdl_aiccs))',mdl_formulas,mdl_links,mdl_aiccs,mdl_r2_adj,mdl_r2,norm_res,'VariableNames',{'Rank','formula','link','AICc','adj.R2(%)','R2(%)','norm.res.'}),'AICc');
 else
@@ -125,9 +130,12 @@ else
 end
 mdls = mdls(models.Rank); %reorder mdls so it is in the same order as models
 models.Rank = (1:numel(mdl_aiccs))'; %make their rank increase too
-disp(models)
-disp(' ------------------------------------------------------------------------------- ')
+if verbose==1
+    disp(models)
+    disp(' ------------------------------------------------------------------------------- ')
+end
 catch err
+    disp('Error caught: for debugging, write rethrow(err)')
     keyboard
 end
 end

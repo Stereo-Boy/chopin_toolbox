@@ -1,7 +1,8 @@
-function anovas = display_model(mdl, model)
+function [anovas, effect_sizes_table] = display_model(mdl, model)
 % mdl the model object to plot (obtained through all_glm / fitglm / fitglme functions
 % glme: whether this is a glme or not (default 0)
 % anovas: an output table with model factors, stats and adjusted p values
+% effect_sizes_table: transmitting a table of local effect sizes f2 from effect_sizes function
 
 if ~exist('model','var') || isfield(model,'glme')==0; model.glme = 0; end
 if ~exist('model','var') || isfield(model,'p_adjust_method')==0; model.p_adjust_method = 'none'; end % default 'none', other options are 'benjamini-hochberg', 'bonferroni'
@@ -95,8 +96,12 @@ try
     for i=1:size(anovas,1)
         anovas.Name{i} = [mdl.ResponseName,': ',anovas.Name{i}];
     end
+
+    % automatically display local effect sizes Cohen's f2 for each factor
+    effect_sizes_table = effect_sizes(mdl, model);
     disp(' ------------------------------------------------------------------------------- ')
 %% debugging
 catch err
+   disp('Error caught: for debugging, write rethrow(err)')
    keyboard 
 end
