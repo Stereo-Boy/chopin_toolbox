@@ -257,7 +257,7 @@ To interpret statistical analyses, you will need to:
 * interpret forms of effect sizes
 * plot the data to see the direction of the effects: use for example plot_group_effect / plot_covariate_effect / plot_interaction / plot_triple_interaction
 
-#### Interpret significance
+#### Interpreting significance
 * Find how many hypotheses that you have planned are actually tested in your different models. 
 * Correct for that number of comparisons using display_model with option model.p_adjust_method ('bonferroni' or 'benjamini-hochberg') and model.nb_tests.
 * If you are using 'benjamini-hochberg' (see dedicated section below) and have several different models, you may want to correct for all the comparisons in all the models. In that case, use adjust_p_benjamini_hochberg as follows:
@@ -285,7 +285,7 @@ Significant effect of Speed_Metric_T_Hands: load_S (t(510) = 2.47, adjusted p = 
 Significant effect of Mean_Velocity_T_Hands: stereo_M (t(508) = -2.35, adjusted p = 0.028922)
 ```
 
-#### Interpret coefficients 
+#### Interpreting coefficients 
 To interpret coefficients in a GLM, you need to understand the meaning of the coefficients, which depend on the link function and chosen distribution: 
 * with logit link (logistic regression), the coefficients represent the log-odds. So you can exponentiate the coefficients to get odds ratios. This can be interpreted as the factor by which the odds of the outcome increase (or decrease) for a one-unit change in the predictor.
 ```matlab
@@ -300,22 +300,26 @@ percentChangeByFactor = 100.*exp(mdls{1}.Coefficients.Estimate(2:end)); % mdls{1
 Note 1: It is generally good to look at the literature ot understand how to interpret coefficients and how to extract effect sizes.
 Note 2: To obtain standardized coefficients: you can standardize your predictors before fitting the model. The resulting coefficients will then be in units of standard deviations.
 
-#### Interpret effect sizes 
-To interpret the importance of one specific factor in the model (effect size equivalent), one possible strategy is to compare R2 with and without the factor of interest. Please do due diligence on the question before doing that. For example:
+#### Interpreting effect sizes 
+To interpret the importance of one specific factor in the model (effect size equivalent), one possible strategy is to compare R2 with and without the factor of interest. Please do due diligence on the question before doing that. 
+In the current version, we are following Selya et al. (2012) - A Practical Guide to Calculating Cohents f2, a Measure of Local Effect Size, from PROC MIXED.
+We calculate a local Cohen's f2 (f squared) for mixed effect model for each factor by using the formula (for factor A):
+f2_A = (R2minusA - R2_all) / (1 - R2_all)
+with R2_all the R squared when all factors are in the model, and R2_minusA the R squared when all the factors minus A are included. Note that R2 is calculated here using the ordinary method and you could use the deviance method instead for GLME.
+
+An example of output obtained is:
 ```matlab
-% to estimate the effect of meditation, create a second model without meditation:
-model.solid_factors = {'sport'}; %keep these between {}
-model.liquid_factors = {''};
-model.links = {'log'};
-mdls_without_meditation = all_glm(model);
-r2_meditation = round(100.*(mdls{1}.Rsquared.Ordinary - mdls_without_meditation{1}.Rsquared.Ordinary),1);
-dispi('Effect of meditation (difference in R squared): ',r2_meditation,'% (',round(r2_meditation/mdls{1}.Rsquared.Ordinary,1),'% of total explained variance)')
+Local effect size for trial : Cohen's f2 = 0.21 (medium)
+Local effect size for load : Cohen's f2 = 0.14 (small)
+Local effect size for stereo:ageGroup : Cohen's f2 = 0.15 (medium)
+ -------------------------------------------------------------------------------
 ```
 
-For GLMs (not GLMEs), one can also estimate a pseudo R2 instead of the provided R2, following equation (8.9) in [4]:
+For GLMs (not GLMEs), one can also estimate a pseudo R2 instead of the provided R2, following equation (8.9) in [4].
 ```matlab
 pseudoR2 = (mdls_intercept{1}.LogLikelihood-mdls{1}.LogLikelihood)/mdls_intercept{1}.LogLikelihood
 ```
+For GLME, deviance can be used instead of log likelihood.
 
 ### plot_group_effect / plot_covariate_effect / plot_interaction / plot_triple_interaction
 Plots the results for one selected model. For these functions to work, make sure grouping factors have categorical format (using function categorical).
