@@ -24,7 +24,12 @@ try
     [H, P, KSstat] = kstest((mdl.Residuals.raw-nanmean(mdl.Residuals.raw))./nanstd(mdl.Residuals.raw));
     dispi('Residuals: Kolmogorov test for normality (alpha 5%):  KS = ',sprintf('%.2f',KSstat),', p = ',sprintf('%.4f',P));
     if H==1; disp('Residuals are not normal'); else; disp('Residuals are normal'); end
-    
+    if model.glme==1 % this is a GLME
+        % also dispay random effect estimates and stats
+        [~,~,stats] = randomEffects(mdl,'Alpha',0.01);
+        dispi(stats) 
+    end
+
     % plot diagnostics
     figure('Color', 'w', 'units','normalized','outerposition',[0 0.1 1 0.5]);
     if model.glme==0 % this is a GLM

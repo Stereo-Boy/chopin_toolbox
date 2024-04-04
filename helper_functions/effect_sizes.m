@@ -58,7 +58,7 @@ catch err
 end
 end
 
-function factors = split_factors(formula)
+function terms = split_factors(formula)
 % Split the formula into terms
     
     % first convert the model class in string
@@ -79,9 +79,6 @@ function factors = split_factors(formula)
     
     % remove empty cells if any
     terms(cellfun(@isempty, terms))=[];
-
-    % remove random factors and intercept (they start with a parenthesis)
-    factors = terms(~cellfun(@(x) startsWith(x, '('), terms)); 
 end
 
 function f2sizes = interpret_f2(i, f2s, f2sizes)

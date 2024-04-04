@@ -181,10 +181,12 @@ Once you have a candidate, the next step is to check the validity of that candid
 
 ### display_model 
 * displays variable formats for the best model in command window
-* displays best model's stats in command window
-* display diagnostic figures and tests in command window
-* display adjusted p-values in command window
-* display formatted hypothesis rejection in command window
+* displays best model's stats in command window (fixed effects)
+* displays best model's stats in command window (random effects)
+* displays diagnostic figures and tests in command window
+* displays adjusted p-values in command window
+* displays formatted hypothesis rejection in command window
+* displays local effect sizes
 
 The diagnostics are:
 * Scatterplot of residuals vs. fitted values - no fanning should be observed (fanning is an increase of residuals variability at larger fitted values). In addition, there should be no relationship between residuals and fitted values. On these two points, ref. [3] argues that deviations are actually expected for some of the GLMs (e.g. Poisson regression or logistic regression) and that it should be no ground for model exclusion (use deviance residuals instead).
