@@ -94,7 +94,7 @@ try
         else
            result = 'No significant';
         end
-        dispi(result,' effect of ',anovas.Name{j},' (t(',anovas.DF(j),') = ',round(anovas.tStat(j),2),', adjusted p = ',anovas.adj_pValue(j),')')
+        dispi(result,' effect of ',anovas.Name{j},' (t(',anovas.DF(j),') = ',round(anovas.tStat(j),2),', adjusted p = ',round(anovas.adj_pValue(j),4),')')
     end
     
     %add dv name to the table names in anovas

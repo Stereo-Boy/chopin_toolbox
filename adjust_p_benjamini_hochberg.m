@@ -52,6 +52,6 @@ for j=1:size(table,1)
         result = 'No significant';
     end
     if ismember('Name',table.Properties.VariableNames) && ismember('DF',table.Properties.VariableNames) && ismember('tStat',table.Properties.VariableNames)
-        dispi(result,' effect of ',table.Name{j},' (t(',table.DF(j),') = ',round(table.tStat(j),2),', adjusted p = ',table.adj_pValue(j),')')
+        dispi(result,' effect of ',table.Name{j},' (t(',table.DF(j),') = ',round(table.tStat(j),2),', adjusted p = ',round(table.adj_pValue(j),4),')')
     end
 end

@@ -189,9 +189,9 @@ Once you have a candidate, the next step is to check the validity of that candid
 * displays local effect sizes
 
 The diagnostics are:
-* Scatterplot of residuals vs. fitted values - no fanning should be observed (fanning is an increase of residuals variability at larger fitted values). In addition, there should be no relationship between residuals and fitted values. On these two points, ref. [3] argues that deviations are actually expected for some of the GLMs (e.g. Poisson regression or logistic regression) and that it should be no ground for model exclusion (use deviance residuals instead).
-* Distribution of residuals - should be normal, indicated by a non-significant Kolmogorov-Smirnov test (result displayed in the command window)
-* Cook's distance for each observation: this shows how the model prediction depends on the value of a single observation - outliers have very different values compared to the others and a value above 1 [2].
+* Scatterplot of residuals vs. fitted values - no fanning should be observed (fanning is an increase of residuals variability at larger fitted values). In addition, there should be no relationship between residuals and fitted values. On these two points, ref. [3] argues that deviations are actually expected for some of the GLMs (e.g. Poisson regression or logistic regression) and that it should be no ground for model exclusion (use deviance residuals instead). Note that this plots are difficult to interpret in the context of binomial distributions and logistic regression (we plan to expand later for that case). 
+* Distribution of residuals - should be normal, indicated by a non-significant Kolmogorov-Smirnov test (result displayed in the command window). Note that this plots are difficult to interpret in the context of binomial distributions and logistic regression (we plan to expand later for that case). 
+* Cook's distance for each observation: this shows how the model prediction depends on the value of a single observation - outliers have very different values compared to the others and a value above 1 [2]. The plot is not available for GLME.
 
 #### Typical use
 ```matlab
@@ -250,13 +250,13 @@ As you can see, the best model according to AICc shows
 * normality of residuals (p = 0.64)
 * explain a good share of the variance (R^2 and adjusted R^2 - personal criterion)
 
-Now if you are happy with this model fit, you can decide to look at the stastitics and interpret the results. This model shows a significant effect of meditation and music factors on the dependent variable. This code does not allow yet to calculate effect sizes.
+Now if you are happy with this model fit, you can decide to look at the stastitics and interpret the results. This model shows a significant effect of meditation and music factors on the dependent variable.
 
 ### Model interpretation
 To interpret statistical analyses, you will need to:
 * interpret which factor is significant, possibly after correcting for multiple comparisons: use for example adjust_p_benjamini_hochberg 
 * interpret the coefficients
-* interpret forms of effect sizes
+* interpret forms of effect sizes (display_model automatically proposes an effect size for continuous dependent variables)
 * plot the data to see the direction of the effects: use for example plot_group_effect / plot_covariate_effect / plot_interaction / plot_triple_interaction
 
 #### Interpreting significance
@@ -299,21 +299,20 @@ odds_ratios = exp(mdls{1}.Coefficients.Estimate); % mdls{1} is the best model in
 ```matlab
 percentChangeByFactor = 100.*exp(mdls{1}.Coefficients.Estimate(2:end)); % mdls{1} is the best model in the list / we do not include intercept
 ```
-Note 1: It is generally good to look at the literature ot understand how to interpret coefficients and how to extract effect sizes.
+Note 1: It is generally good to look at the literature to understand how to interpret coefficients and how to extract effect sizes.
 Note 2: To obtain standardized coefficients: you can standardize your predictors before fitting the model. The resulting coefficients will then be in units of standard deviations.
 
 #### Interpreting effect sizes 
-To interpret the importance of one specific factor in the model (effect size equivalent), one possible strategy is to compare R2 with and without the factor of interest. Please do due diligence on the question before doing that. 
-In the current version, we are following Selya et al. (2012) - A Practical Guide to Calculating Cohents f2, a Measure of Local Effect Size, from PROC MIXED.
+To interpret the importance of one specific factor in the model (effect size equivalent) for continuous factors, one possible strategy is to compare R2 with and without the factor of interest. Please do due diligence on the question before doing that. In the current version, we are following Selya et al. (2012) - A Practical Guide to Calculating Cohents f2, a Measure of Local Effect Size, from PROC MIXED.
 We calculate a local Cohen's f2 (f squared) for mixed effect model for each factor by using the formula (for factor A):
 f2_A = (R2minusA - R2_all) / (1 - R2_all)
 with R2_all the R squared when all factors are in the model, and R2_minusA the R squared when all the factors minus A are included. Note that R2 is calculated here using the ordinary method and you could use the deviance method instead for GLME.
+For categorical factors, using Cohen's d is more appropriate. We calculate d from t and df for this factor, using a formula from Rosenthal and Rosnow, 1991. We interpret effect sizes using Cohen's (1992) guidelines expanded by Sawilowsky (2009). Note that we are not correcting for correlated designs here, so interpret sizes with caution. Note 2: most effect sizes will be inaccurate in the context of a logistic regression.
 
 An example of output obtained is:
 ```matlab
 Local effect size for trial : Cohen's f2 = 0.21 (medium)
-Local effect size for load : Cohen's f2 = 0.14 (small)
-Local effect size for stereo:ageGroup : Cohen's f2 = 0.15 (medium)
+Local effect size for stereo:ageGroup : Cohen's d = 0.5 (medium)
  -------------------------------------------------------------------------------
 ```
 
