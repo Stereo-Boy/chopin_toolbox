@@ -66,9 +66,11 @@ end
         else
             plot(xlevels,medians,'r-'); 
         end
-        % Set the minimum y to 0 and keep the maximum
-        c = ylim(); % retrieve current axis limits
-        ylim([0 c(2)]);
+        % if nothing negative, set the minimum y to 0 and keep the maximum, otherwise, likely an effect with positive and negative values
+        if ~any(dv<0)
+            c = ylim(); % retrieve current axis limits
+            ylim([0 c(2)]);
+        end
     end
     
 end
