@@ -20,6 +20,7 @@ addpath(genpath('C:\Users\Adrian\Desktop\chopin_toolbox'))
 ## Content
 ### Automated GLM (Generalized Linear Model)/ GLME (Mixed Effects) pipeline
 The following functions are used together to easily separate model selection from statistical hypothesis testing. While some statisticians might be horrified by this idea, others argue that it is possible to use non-hypothesis-based metrics like AICc or adjusted R^2 to select for the best model in a first step, check for the numerous validity conditions before selecting the best model, and then do hypothesis testing using this model (using metrics like p-values and effect sizes). Keep in mind that I am not a qualified statistician.
+* clean_names to clean variables names and avoid later issues
 * check_distrib_indep to visualize the shape of dependent variable distribution and test whether normal with Kolmogorov-Smirnov test
 * corrplot2 to check collinearity between factors
 * all_glm automatically tests and ranks all GLMs/GLMEs as combinations of factors/interactions of factors/link functions
@@ -32,6 +33,16 @@ The following 'typical use' sections should be chained one with the other as a t
 * As mentioned already, some stasticians consider that model estimation step is biasing the future hypothesis testing step and argue that you should have hypotheses and only tests them. I agree with that later part and recommend to use this toolbox only with factors that are parts of a very limited set of meaningful hypotheses.
 * Another point of concern is that it is highly debatable whether it is correct or not to compare models using different link functions using AIC. The statistic is based on the model likelihood, which is itself calculated differently depending on the link function. If you are OK with that conceptual risk, please move further.
 * When using GLM and GLME, many of the methods working well for linear regression become incorrect. Be aware of these limitations before starting.
+
+### clean_names
+Functions like allGLM and effect_sizes need to have no underscore in variable names and modality names (the values that a categorical factor can take).
+It can be time consuming and counterintuitive to change that correctly, so to avoid cryptic later bugs, it is good to start by cleaning data automatically using this function.
+
+#### Typical use
+```matlab
+data.my_categ_factor = categorical(data.my_categ_factor); % first enforce categorical factor type on the variables that should be categorical.
+data = clean_names(data); % then remove any _ in variables and modalities to avoid issues with effect_sizes function
+```
 
 ### check_distrib_indep
 To visualize the shape of dependent variable distribution and test whether normal with Kolmogorov-Smirnov test.

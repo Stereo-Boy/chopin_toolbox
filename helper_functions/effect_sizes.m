@@ -117,7 +117,11 @@ end
 
 function d = get_cohens_d(mdl, factor)
     % see whether factor is in the stat list
-    mdl_factor_list = mdl.Coefficients.Name;
+    try
+        mdl_factor_list = mdl.Coefficients.Name; %GLME
+    catch err
+        mdl_factor_list = mdl.Coefficients.Row; %GLM
+    end
     idx = find(strcmp(mdl_factor_list,factor));
     if numel(idx)==0 % no, we probably need to edit the names
         for j=1:numel(mdl_factor_list)
@@ -142,7 +146,11 @@ function d = get_cohens_d(mdl, factor)
         d = nan;
     else % otherwise continue
         t = mdl.Coefficients.tStat(idx); % read the t-stat
-        df = mdl.Coefficients.DF(idx); % degrees of freedom
+        try
+            df = mdl.Coefficients.DF(idx); % degrees of freedom - GLME
+        catch err
+            df = mdl.DFE; % GLM
+        end
         d = round(2*abs(t)/sqrt(df),2); % this is actually a cohen's d using formula from Rosenthal and Rosnow, 1991
     end
 end
