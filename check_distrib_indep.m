@@ -35,6 +35,7 @@ minn_log = min(log_data);
 maxx_log = max(log_data);
     
 if (H1==1) || (H2==1) %if any distribution is non-normal, try also to log-transform the data
+    try
     disp('Data are non-normal so let''s try to log-transform the data')
     subplot(2,3,4); hist(log10(dataGroup1)); title('Group 1 log-transformed'); xlabel(header); xlim([minn_log maxx_log]);
     subplot(2,3,5); hist(log10(dataGroup2)); title('Group 2 log-transformed'); xlabel(header); xlim([minn_log maxx_log]);
@@ -46,6 +47,9 @@ if (H1==1) || (H2==1) %if any distribution is non-normal, try also to log-transf
         [H1, P1, KSstat1] = kstest(zscore(log10(dataGroup1))); [H2, P2, KSstat2] = kstest(zscore(log10(dataGroup2)));
         dispi('Kolmogorov-Smirnov tests for normality:  Group 1 - KS = ',sprintf('%.2f',KSstat1),', p = ',sprintf('%.4f',P1), ...
             ' and Group 2 - KS = ',sprintf('%.2f',KSstat2),', p = ',sprintf('%.4f',P2)); 
+    end
+    catch err
+        warning('Could not do the KS test after log transform - likely 0 or negative data...')
     end
 end
 

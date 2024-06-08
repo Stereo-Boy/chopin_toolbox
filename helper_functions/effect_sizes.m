@@ -113,6 +113,21 @@ function [terms, dv] = split_factors(formula) % we could have used VariableInfo 
     
     % remove empty cells if any
     terms(cellfun(@isempty, terms))=[];
+
+    % split x*y interaction factors (fit_glm reintroduces this notation in the formula)
+    new_terms = terms;
+    for i = 1:numel(new_terms)
+        celli = new_terms{i}; 
+        if contains(celli, '*')
+          terms(i) = [];  
+          % Split the cell at the asterisk
+          [parts1, ~] = strsplit(celli, '*');
+          % Create three new cells from the split parts
+          terms(end+1) = parts1(1); 
+          terms(end+1) = parts1(2); 
+          terms(end+1) = {[parts1{1}, ':', parts1{2}]};
+        end
+    end
 end
 
 function d = get_cohens_d(mdl, factor)
