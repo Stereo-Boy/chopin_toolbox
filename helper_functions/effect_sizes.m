@@ -131,12 +131,17 @@ function [terms, dv] = split_factors(formula) % we could have used VariableInfo 
 end
 
 function d = get_cohens_d(mdl, factor)
-    % see whether factor is in the stat list
+% this function extracts the cohen's d for a factor in mdl
+    % removes parentheses in potential (X^2) factor
+    factor(strfind(factor,'(')) = []; 
+    factor(strfind(factor,')')) = []; 
+    % find the list of factors in the mdl structure
     try
         mdl_factor_list = mdl.Coefficients.Name; %GLME
     catch err
         mdl_factor_list = mdl.Coefficients.Row; %GLM
     end
+    % see whether factor is in the stat list
     idx = find(strcmp(mdl_factor_list,factor));
     if numel(idx)==0 % no, we probably need to edit the names
         for j=1:numel(mdl_factor_list)
