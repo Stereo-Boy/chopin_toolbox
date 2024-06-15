@@ -60,17 +60,9 @@ try
     end
     xlabel(xlabell); ylabel(ylabell);
     legend(h,legendLabelsList,'Location','South');
-    %xlim([min(x).*0.95,max(x).*1.05]);
     if loggX==1; set(gca, 'XScale', 'log'); end
-    if loggY==1
-        set(gca, 'YScale', 'log')
-    else
-        % % if nothing negative, set the minimum y to 0 and keep the maximum, otherwise, likely an effect with positive and negative values
-        % if ~any(dv<0)
-        %     c = ylim(); % retrieve current axis limits
-        %     ylim([0 c(2)]);
-        % end
-    end
+    if loggY==1; set(gca, 'YScale', 'log'); end
+
 catch err
     keyboard
 end

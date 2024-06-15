@@ -333,7 +333,7 @@ pseudoR2 = (mdls_intercept{1}.LogLikelihood-mdls{1}.LogLikelihood)/mdls_intercep
 ```
 For GLME, deviance can be used instead of log likelihood.
 
-### plot_group_effect / plot_covariate_effect / plot_interaction / plot_triple_interaction
+### plot_group_effect / plot_covariate_effect / plot_interaction / plot_triple_interaction / plot_covariate_interaction
 Plots the results for one selected model. For these functions to work, make sure grouping factors have categorical format (using function categorical).
 
 #### Typical use
@@ -349,8 +349,8 @@ snapnow; %plot figure when publishing markdown code
 ```
 ![a figure showing the group effect plot](example_figures/results.png)
 Note that the group effect plot code works only with a grouping variable with two levels (at the moment).
-For a continuous factor or an interaction relationship, you can use plot_covariate_effect or plot_interaction instead. The example below plots the effect of music practice in hours on our dependent variable.
 
+For a continuous factor or an interaction relationship, you can use plot_covariate_effect or plot_interaction instead. The example below plots the effect of music practice in hours on our dependent variable.
 ```matlab
 h=subplot(1,4,4);
 plot_covariate_effect(data.initial_work_mem, data.music, h, 'Music practice (hours)', 'initial working memory performance', 0, 0, mdls{1},1,model);
@@ -371,6 +371,10 @@ h=subplot(1,1,1);
 plot_triple_interaction(data.duration, data.load, data.stereo, 'Cognitive Load', 'Duration (s)', [], [], model) 
 ```
 ![a figure showing a triple interaction plot](example_figures/triple_interaction.png)
+
+This one below looks at an interaction between a group factor (ageGroup) and a continuous factor (music) for the initial_orient dependent variable.
+h=subplot(1,3,3); 
+% plot_covariate_effect(data.initial_orient, data.music, data.ageGroup, h, 'Music practice (hours)', 'initial orientation threshold', [], 0, 0, mdls{1}, 1, model)
 
 ## Some additional information
 ### Interpretation of AIC
