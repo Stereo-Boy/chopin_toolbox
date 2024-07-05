@@ -333,6 +333,9 @@ pseudoR2 = (mdls_intercept{1}.LogLikelihood-mdls{1}.LogLikelihood)/mdls_intercep
 ```
 For GLME, deviance can be used instead of log likelihood.
 
+Known bug:
+* if one want to use effect_sizes with quadratic factors (X^2), consider defining a new variable X2 = X^2 to avoid multiple problems with fitglm and effect sizes.
+
 ### plot_group_effect / plot_covariate_effect / plot_interaction / plot_triple_interaction / plot_covariate_interaction
 Plots the results for one selected model. For these functions to work, make sure grouping factors have categorical format (using function categorical).
 

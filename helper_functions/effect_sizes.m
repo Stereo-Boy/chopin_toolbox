@@ -45,18 +45,29 @@ f2s = []; f2sizes = {}; iter = 1; types = {}; list_factors_es = {};
 if numel(list_factors)>1
     for i=1:numel(list_factors)
         factor = list_factors{i};
+        % removes ^ symbol in potential (X^2) factor to match what should be found in mdl.VariableInfo.Row
+        factor(strfind(factor,'^')) = []; 
+        if contains(factor,'|') % in case of random effects, skip because the anova table only has fixed effects
+            continue
+        end
         idx = find(strcmp(mdl.VariableInfo.Row,factor)); % locate factor in mdl VariableInfo
-        if ~mdl.VariableInfo.IsCategorical(idx) % if continuous, calculate f2
+        if isempty(idx)
+            warning('One of the factor is not in the list of factors - please check. If the factor is a quadratic component of a factor (e.g. X^2),')
+            warning('consider defining a new variable X2 = X^2 to avoid multiple problems with fitglm and effect sizes.')
+            warning(['Factor name: ',factor])
+            warning('List of factors: ')
+            disp(list_factors)
+        elseif~mdl.VariableInfo.IsCategorical(idx) % if continuous, calculate f2
             model.solid_factors = list_factors(~cellfun(@(x) strcmp(x,list_factors{i}), list_factors)); % select all factors but the ith one
             mdls = all_glm(model,0); % run the model with verbose off
             f2s(iter) = round((mdl.Rsquared.Ordinary - mdls{1}.Rsquared.Ordinary)/(1-mdl.Rsquared.Ordinary),2);
-            types(iter) = {'Cohen''s f2'};
+            types(iter) = {'Cohen s f2'};
         else % for categorical, we use Cohen's d calculated from t-stat
             if contains(factor,'|') % in case of random effects, skip because the anova table only has fixed effects
                 continue
             else
                 f2s(iter) = get_cohens_d(mdl, factor);
-                types(iter) = {'Cohen''s d'};
+                types(iter) = {'Cohen s d'};
             end
         end
         f2sizes(iter) = {interpret_f2(f2s(iter),types{iter})};
@@ -70,14 +81,14 @@ else
     if ~mdl.VariableInfo.IsCategorical(idx) % if continuous, calculate f2
         % when there is only one factor, we just calculate the model f2
         f2s(1) = round(mdl.Rsquared.Ordinary/(1-mdl.Rsquared.Ordinary),2);
-        types(1) = {'Cohen''s f2'};
+        types(1) = {'Cohen s f2'};
     else %for categorical, we use Cohen's d calculated from t-stat
          if contains(factor,'|') % in case of random effects, skip because the anova table only has fixed effects
                 f2s(1) = nan;
                 types(1) = {'None'};
          else
                 f2s(1) = get_cohens_d(mdl, factor);
-                types(1) = {'Cohen''s d'};
+                types(1) = {'Cohen s d'};
          end
     end
     f2sizes(1) = {interpret_f2(f2s(1), types{1})};
@@ -179,7 +190,7 @@ function f2size = interpret_f2(f2,type)
 % finding effect size using guidelines for interpretation of f2 indicating that 0.02 is a small effect, 0.15 is a medium effect, and 0.35 is a large effect (Cohen 1992)
 f2size = 'dubious';
     switch type
-        case {'Cohen''s f2'}
+        case {'Cohen s f2'}
             if f2>=0.35
                 f2size = 'large';
             elseif f2>=0.15
@@ -187,7 +198,7 @@ f2size = 'dubious';
             elseif f2>=0.02
                 f2size = 'small';
             end
-        case {'Cohen''s d'} % using Cohen's (1992) guidelines expanded by Sawilowsky (2009)
+        case {'Cohen s d'} % using Cohen's (1992) guidelines expanded by Sawilowsky (2009)
             if f2>=2
                 f2size = 'huge';
             elseif f2>=1.2
