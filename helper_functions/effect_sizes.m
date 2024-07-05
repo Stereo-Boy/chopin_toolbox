@@ -50,14 +50,15 @@ if numel(list_factors)>1
         if contains(factor,'|') % in case of random effects, skip because the anova table only has fixed effects
             continue
         end
-        idx = find(strcmp(mdl.VariableInfo.Row,factor)); % locate factor in mdl VariableInfo
+        idx = find(strcmp(mdl.VariableInfo.Row,factor)); % locate factor in mdl VariableInfo to check whether it is categorical or not
         if isempty(idx)
-            warning('One of the factor is not in the list of factors - please check. If the factor is a quadratic component of a factor (e.g. X^2),')
-            warning('consider defining a new variable X2 = X^2 to avoid multiple problems with fitglm and effect sizes.')
-            warning(['Factor name: ',factor])
-            warning('List of factors: ')
+            warning('One of the factor is not in the list of factors - please check - by default we will assume a non-categorical factor.')
+            warning('If the factor is a quadratic component of a factor (e.g. X^2), consider defining a new variable X2 = X^2 to avoid multiple problems with fitglm and effect sizes.')
+            dispi('Factor name: ',factor)
+            disp('List of factors: ')
             disp(list_factors)
-        elseif~mdl.VariableInfo.IsCategorical(idx) % if continuous, calculate f2
+        end
+        if isempty(idx) || ~mdl.VariableInfo.IsCategorical(idx) % if continuous, calculate f2
             model.solid_factors = list_factors(~cellfun(@(x) strcmp(x,list_factors{i}), list_factors)); % select all factors but the ith one
             mdls = all_glm(model,0); % run the model with verbose off
             f2s(iter) = round((mdl.Rsquared.Ordinary - mdls{1}.Rsquared.Ordinary)/(1-mdl.Rsquared.Ordinary),2);
