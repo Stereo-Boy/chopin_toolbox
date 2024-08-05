@@ -104,7 +104,7 @@ Note that:
   * Liquid are picked in combination with solid factors until you reach the maximum number of factors (can be empty using {''}). Combinations with a number of factors inferior to the max are also included. 
   * Fixed effect factors should NOT be in parentheses, random-effect factors should be. 
   * Interaction factors are expressed as factor1:factor2. Notation factor1*factor2 also includes main effects of factor1 and factor2. 
-  * Note that you can add squared factors for continuous variables (ex: 'factor^2').
+  * Note that you can add squared factors for continuous variables (ex: 'factor^2') but refrain from doing so and prefer defining a new variable factor2 = factor^2 and work with that variable to avoid bugs.
 * you define potential model links between the dependend variable and the factors - only include links that make sense, otherwise it may result in errors. Potential links are: 'log', 'reciprocal','identity','-2','-3','probit','logit','loglog','comploglog'.
   * log links require the dependent variable X to be defined on ]0, +Inf]. I recommend to tranform your variable to X+eps if X is defined on [0, +Inf].
 ![a table figure showing the link functions](example_figures/links.png)
