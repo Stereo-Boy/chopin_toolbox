@@ -1,19 +1,27 @@
-function [coef, pval] = corr_format(x, y, type, header)
+function [coef, pval] = corr_format(x, y, type, header, nanIgnore)
 % Find correlation between x and y using type ('Spearman', 'Pearson' or
 % 'Kendall') correlations AND format it nicely on the command window. 
 % Header is printed in front and can be omitted
-%
+% If nanIgnore == 1 (default), then remove nan lines
+% 
 % It also reads the effet size Cohen's f2 and its interpretation following Cohen’s (1988)
 % guidelines, f2? 0.02, f2? 0.15, and f2 ? 0.35 represent small, medium, and large effect sizes
 % typical use: corr_format(x, y, 'Spearman', 'x vs. y');
 
-if ~exist('type','var')||isempty(type)||(strcmpi(type,'Spearman')==0&&strcmpi(type,'Pearson')==0&&strcmpi(type,'Kendall')==0)
-    type = 'Spearman'; %default
-end
+% default values
+if ~exist('type','var')||isempty(type)||(strcmpi(type,'Spearman')==0&&strcmpi(type,'Pearson')==0&&strcmpi(type,'Kendall')==0);    type = 'Spearman'; end
+if ~exist('header','var');    header = '';  end
+if ~exist('nanIgnore','var');    nanIgnore = 1;  end
 
-if ~exist('header','var')
-    header = '';
-end
+% orient data in columns
+if size(x,2)>size(x,1); x = x'; end
+if size(y,2)>size(y,1); y = y'; end
+
+% remove lines with nan if necessary
+data = [x, y];
+data(any(isnan(data),2),:) = []; 
+x = data(:,1);  y = data(:,2);
+
 %calculating r
 [coef, pval] = corr(x, y,'type',type);
 
