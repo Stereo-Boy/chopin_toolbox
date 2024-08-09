@@ -78,10 +78,9 @@ This function is almost identical to corrplot (Matlab included). Use it to check
 
 #### Typical use
 ```matlab
-% Create a table of the factors for conveniency
-data_factors = table(data.music,data.sport,data.expect, 'VariableNames',  {'music','sport','expect'});
+% Only apply the collinearity analysis on continuous predictors
 % Use Kendall correlations that are more powerful when using small samples
-corrplot2(data_factors,'type','Kendall')
+corrplot2(data(:,{'music','sport','expect'}),'type','Kendall')
 snapnow; %plot figure when publishing markdown code
 ```
 Results obtained:
