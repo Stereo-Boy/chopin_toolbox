@@ -52,13 +52,13 @@ if numel(list_factors)>1
         end
         idx = find(strcmp(mdl.VariableInfo.Row,factor)); % locate factor in mdl VariableInfo to check whether it is categorical or not
         if isempty(idx)
-            warning('One of the factor is not in the list of factors - please check - by default we will assume a non-categorical factor.')
-            warning('If the factor is a quadratic component of a factor (e.g. X^2), consider defining a new variable X2 = X^2 to avoid multiple problems with fitglm and effect sizes.')
-            dispi('Factor name: ',factor)
-            disp('List of factors: ')
-            disp(list_factors)
+        %     warning('One of the factor is not in the list of factors - please check - by default we will assume a non-categorical factor.')
+        %     warning('If the factor is a quadratic component of a factor (e.g. X^2), consider defining a new variable X2 = X^2 to avoid multiple problems with fitglm and effect sizes.')
+        %     dispi('Factor name: ',factor)
+        %     disp('List of factors: ')
+        %     disp(list_factors)
         end
-        if isempty(idx) || ~mdl.VariableInfo.IsCategorical(idx) % if continuous, calculate f2
+        if isempty(idx) || ~mdl.VariableInfo.IsCategorical(idx) % if not in the list or in the list but not categorical, it can mean an interaction terms or a continuous factor, then calculate f2
             model.solid_factors = list_factors(~cellfun(@(x) strcmp(x,list_factors{i}), list_factors)); % select all factors but the ith one
             mdls = all_glm(model,0); % run the model with verbose off
             f2s(iter) = round((mdl.Rsquared.Ordinary - mdls{1}.Rsquared.Ordinary)/(1-mdl.Rsquared.Ordinary),2);
@@ -104,8 +104,9 @@ catch err
 end
 end
 
-function [terms, dv] = split_factors(formula) % we could have used VariableInfo instead but this also gets us interaction terms and dv (which can be also found in mdl.ResponseName)
-% Split the formula into terms and dv
+function [new_terms, dv] = split_factors(formula) % we could have used VariableInfo instead but this also gets us interaction terms and dv (which can be also found in mdl.ResponseName)
+try
+% Split the formula into terms and dv and deal with special cases like * interaction reintroduced elsewhere 
     % first convert the model class in string
     formula = char(formula);
 
@@ -127,19 +128,28 @@ function [terms, dv] = split_factors(formula) % we could have used VariableInfo 
     terms(cellfun(@isempty, terms))=[];
 
     % split x*y interaction factors (fit_glm reintroduces this notation in the formula)
-    new_terms = terms;
-    for i = 1:numel(new_terms)
-        celli = new_terms{i}; 
-        if contains(celli, '*')
-          terms(i) = [];  
+    new_terms = {};
+    for i = 1:numel(terms)
+        celli = terms{i}; 
+        if contains(celli, '*')  
           % Split the cell at the asterisk
           [parts1, ~] = strsplit(celli, '*');
           % Create three new cells from the split parts
-          terms(end+1) = parts1(1); 
-          terms(end+1) = parts1(2); 
-          terms(end+1) = {[parts1{1}, ':', parts1{2}]};
+          new_terms(end+1) = parts1(1); 
+          new_terms(end+1) = parts1(2); 
+          new_terms(end+1) = {[parts1{1}, ':', parts1{2}]};
+        else
+          new_terms{i} = celli;
         end
     end
+
+    % remove potential doublon factors
+    new_terms = unique(new_terms);
+
+catch err
+    disp('Error caught: for debugging, write rethrow(err)')
+    keyboard
+end
 end
 
 function d = get_cohens_d(mdl, factor)

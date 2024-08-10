@@ -65,9 +65,9 @@ try
     
     % plot legend
     if plotModel
-        legend([p1,p2,m1,m2],{legendLabels{1},legendLabels{2},'Model estimates','Model estimates'});  
+        legend([p1,p2,m1,m2],{legendLabels{1},legendLabels{2},'Model estimates','Model estimates'},'Location','southeast');  
     else
-        legend([p1,p2],legendLabels);
+        legend([p1,p2],legendLabels,'Location','southeast');
     end
 
     % if nothing negative, set the minimum y to 0 and keep the maximum, otherwise, likely an effect with positive and negative values
