@@ -299,10 +299,17 @@ Significant effect of Mean_Velocity_T_Hands: stereo_M (t(508) = -2.35, adjusted 
 
 #### Interpreting coefficients 
 To interpret coefficients in a GLM, you need to understand the meaning of the coefficients, which depend on the link function and chosen distribution: 
-* with logit link (logistic regression), the coefficients represent the log-odds. So you can exponentiate the coefficients to get odds ratios. This can be interpreted as the factor by which the odds of the outcome increase (or decrease) for a one-unit change in the predictor.
+* with logit link (logistic regression), the coefficients represent the log-odds. So you can exponentiate the coefficients to get odds ratios. This can be interpreted as the factor by which the odds of the outcome increase (or decrease) for a one-unit change in the predictor. For example, a beta of 0.3 is associated with an odds ratio of exp(0.3) = 1.35, which means that the odds of the event are 1.35 higher for each one-unit increase in the predictor.
 ```matlab
 odds_ratios = exp(mdls{1}.Coefficients.Estimate); % mdls{1} is the best model in the list
 ```
+Now it is easier to think about changes in the probabilities of an event (or risk variation) rather than about changes in odds. You can instead convert the odds ratios to relative risk by using the probability of the event for a specific value of your predictor. I recommmend this article for this: https://www.r-bloggers.com/2014/01/how-to-convert-odds-ratios-to-relative-risks/
+Briefly, if your predictor varies between x and y, and the risk at x is px = 0.5 and at y is py = 0.6, then you can use this formula to calculate the range of relative risks:
+```matlab
+Relative Risk at x = (odds ratio) / (1 – px + (px.odds ratio)) = RRx
+Relative Risk at y = (odds ratio) / (1 – py + (py.odds ratio)) = RRy
+```
+So the relative risk varies between RRx = 1.15 and RRy = 1.12 and you can conclude that there is approximately 1.13 times more risk of the event for each unit-change in your predictor, or a 13% risk increase.
 * with a Poisson log regression, they represent the log of the expected count. So the exponential of the coefficients represents the multiplicative effect on the expected count.
 * log link with normal distribution: the coefficients can be interpreted as the percentage change in the expected value of the dependent variable for a one-unit change in the predictor.
 * In gamma distributions, only the location parameter is estimated and reflected in the coefficients, not the shape one.
