@@ -207,7 +207,7 @@ The diagnostics are:
 #### Typical use
 ```matlab
 % display diagnostics and results
-display_model(mdls{1}, model.glme) %plot model ranked 1 - you can select any other models by rank according to the results on the various indicators provided
+display_model(mdls{1}, model) %plot model ranked 1 - you can select any other models by rank according to the results on the various indicators provided
 snapnow; %plot figure when publishing markdown code
 ```
 

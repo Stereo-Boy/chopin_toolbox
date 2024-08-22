@@ -3,11 +3,11 @@ function [anovas, effect_sizes_table] = display_model(mdl, model)
 % glme: whether this is a glme or not (default 0)
 % anovas: an output table with model factors, stats and adjusted p values
 % effect_sizes_table: transmitting a table of local effect sizes f2 from effect_sizes function
-
+try
 if ~exist('model','var') || isfield(model,'glme')==0; model.glme = 0; end
 if ~exist('model','var') || isfield(model,'p_adjust_method')==0; model.p_adjust_method = 'none'; end % default 'none', other options are 'benjamini-hochberg', 'bonferroni'
 if ~exist('model','var') || isfield(model,'nb_tests')==0; model.nb_tests = numel(mdl.CoefficientNames)-1; end % minus 1 because it assumes intercept is included
-try
+
     disp('Summary of variable formats in best model')
     disp(mdl.VariableInfo(mdl.VariableInfo.InModel==1,:))
     
