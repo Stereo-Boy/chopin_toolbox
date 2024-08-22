@@ -181,6 +181,7 @@ We tested 30 models.
      30     {'initial_work_mem ~ 1 + meditation + expect + expect:meditation'          }    {'log'     }    23.491      16.3       21.4      {'yes'} 
 ```
 Models are ranked by lowest AICc. Here we follow ref. [1] showing that AIC/AICc/BIC are better criterion than R2/adj.R2 for selecting among non-linear regression models. See section interpretation of AIC below for more information.
+Warning: when choosing the best model with different link functions, use adj.R2 to rank the models rather than AIC. AIC can use very different formulas depending on the link function.
 In a glance, you can find the line of the model that satisfies the following conditions:
 * low AICc
 * positive adjusted R^2
