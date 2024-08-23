@@ -57,6 +57,9 @@ if rot_fact_nb>0 % generates a list of models with various liquid factors to tes
     end
 else
     skip = 1;
+    if model.glme == 1 % This intend at finding all (1|factor) to move them at the end of the formula to avoid a weird bug with fitglme
+       formula_start = moveSubstringToEnd(formula_start);
+    end
     formulas = formula_start;
 end
 
@@ -95,13 +98,18 @@ end
 for i=1:size(formulas,1)
     for j=1:numel(model.links)
         idx = numel(model.links)*(i-1)+j;
-        if model.glme==0
-            mdl = fitglm(model.data,formulas{i},'Distribution',model.distribution,'Link',model.links{j});
+        if size(formulas,1)==1
+            formula = formulas;
         else
-            mdl = fitglme(model.data,formulas{i},'Distribution',model.distribution,'Link',model.links{j});
+            formula = formulas{i};
+        end
+        if model.glme==0
+            mdl = fitglm(model.data,formula,'Distribution',model.distribution,'Link',model.links{j});
+        else
+            mdl = fitglme(model.data,formula,'Distribution',model.distribution,'Link',model.links{j});
         end
         mdls{idx} = mdl;
-        mdl_formulas{idx} = formulas{i};
+        mdl_formulas{idx} = formula;
         mdl_links{idx} = model.links{j};
         if model.glme==0
             mdl_aiccs(idx) = mdl.ModelCriterion.AICc;
@@ -166,7 +174,6 @@ function modifiedString = moveSubstringToEnd(inputString)
     
     % Find all matches in the input string
     matches = regexp(inputString, pattern, 'match');
-    
     % Replace all matches with an empty string in the original string
     modifiedString = regexprep(inputString, pattern, '');
     

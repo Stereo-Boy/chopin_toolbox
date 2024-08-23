@@ -41,6 +41,7 @@ It can be time consuming and counterintuitive to change that correctly, so to av
 #### Typical use
 ```matlab
 data.my_categ_factor = categorical(data.my_categ_factor); % first enforce categorical factor type on the variables that should be categorical.
+data.my_categ_factor = reordercats(data.my_categ_factor,{'Reference','group2','group3'}); % if you have more than one level in a categorical factor and you want to choose which one is the reference for the dummy variable coding, reorder the levels so that your reference level is the first one in the list.
 data = clean_names(data); % then remove any _ in variables and modalities to avoid issues with effect_sizes function
 ```
 
@@ -345,6 +346,7 @@ Known bug:
 
 ### plot_group_effect / plot_covariate_effect / plot_interaction / plot_triple_interaction / plot_covariate_interaction
 Plots the results for one selected model. For these functions to work, make sure grouping factors have categorical format (using function categorical).
+Warning: these functions work for grouping factors with 2 levels only!
 
 #### Typical use
 ```matlab
