@@ -34,15 +34,14 @@ The following 'typical use' sections should be chained one with the other as a t
 * Another point of concern is that it is highly debatable whether it is correct or not to compare models using different link functions using AIC. The statistic is based on the model likelihood, which is itself calculated differently depending on the link function. If you are OK with that conceptual risk, please move further.
 * When using GLM and GLME, many of the methods working well for linear regression become incorrect. Be aware of these limitations before starting.
 
-### clean_names
-Functions like allGLM and effect_sizes need to have no underscore in variable names and modality names (the values that a categorical factor can take).
-It can be time consuming and counterintuitive to change that correctly, so to avoid cryptic later bugs, it is good to start by cleaning data automatically using this function.
+### Preparing the data
+* Make sure that all your categorical factors are defined as such. 
+* If you have more than one level in a categorical factor and you want to choose which one is the reference for the dummy variable coding (default), reorder the levels so that your reference level is the first one in the list.
 
-#### Typical use
+#### Example
 ```matlab
 data.my_categ_factor = categorical(data.my_categ_factor); % first enforce categorical factor type on the variables that should be categorical.
-data.my_categ_factor = reordercats(data.my_categ_factor,{'Reference','group2','group3'}); % if you have more than one level in a categorical factor and you want to choose which one is the reference for the dummy variable coding, reorder the levels so that your reference level is the first one in the list.
-data = clean_names(data); % then remove any _ in variables and modalities to avoid issues with effect_sizes function
+data.my_categ_factor = reordercats(data.my_categ_factor,{'Reference','group2','group3'}); % reorder the levels so that your reference level is the first one in the list.
 ```
 
 ### check_distrib_indep
@@ -128,7 +127,7 @@ I recommend to use the canonical link function corrresponding to your distributi
     % the maximal nb of factors to explore in the model
     model.max_nb_factors = 3;
     % a factor or a list of factors that are always included in the model (for the moment, works with only one solid factor - use '' for none)
-    model.solid_factors = {'meditation'}; %keep these between {}
+    model.solid_factors = {'meditation'}; %keep these between {} - intercept is included by default, use '-1' as a solid factor to remove intercept
     % a list of possible factors to be included, that can be removed if needed, and the interactions terms to explore
     model.liquid_factors = {'music','sport','expect','music:meditation','expect:meditation'}; %keep these between {}
     % a list of potential model links

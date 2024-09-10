@@ -12,7 +12,7 @@ function mdls = all_glm(model, verbose)
 %   model.p_adjust_method = 'benjamini-hochberg'; % optional - method for adjusting p for multiple comparison - default 'none', other options are 'benjamini-hochberg', 'bonferroni' - optionnaly, you can enter the nb of hypothesis tests in model.nb_tests - actually used in display_model only
 %   model.nb_tests = 3; % optional - nb of hypothesis tests used for p adjustment - if not specified, the nb of tests is the nb of factors in the best model - actually used in display_model only
 % Example of use:
-%           model.solid_factors = {'meditation'}; %keep these between {}
+%           model.solid_factors = {'meditation'}; %keep these between {} - intercept is included by default, use '-1' as a solid factor to remove intercept
 %           model.liquid_factors = {'music','sport','expect','music:meditation','sport:meditation','expect:meditation'}; %keep these between {}
 %           model.data = data;
 %           model.max_nb_factors = 5;
@@ -38,7 +38,12 @@ if exclude % here I prefer to exclude the observations, rather than using the Ex
 end
 rot_fact_nb = model.max_nb_factors - numel(model.solid_factors);
 skip=0;
-formula_start = [model.dv,' ~ 1'];
+if any(strcmp(model.solid_factors,'-1')) % detected -1 as a solid factor to remove intercept
+    formula_start = [model.dv,' ~ -1'];    %removing intercept
+    model.solid_factors(strcmp(model.solid_factors,'-1')) = []; % removing -1 as a factor
+else
+    formula_start = [model.dv,' ~ 1'];
+end
 for ii=1:numel(model.solid_factors)
     if ~isempty(model.solid_factors{ii})
         formula_start = [formula_start,' + ',model.solid_factors{ii}];
