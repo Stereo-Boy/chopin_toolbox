@@ -38,7 +38,12 @@ try
             y2 =  mdl.fitted; y2 = y2(grouping_factor==levels(1)); % in two steps to avoid a bug with model object methods
         end
         m1 = plot(x,y2,'bo'); 
+
+        % plot line trends
+        ab=robustfit(x,y2); 
+        plot(handle,sort(x),ab(2).*sort(x)+ab(1),'b-');
     end
+
    if numel(xlevels)<=2
         medians(1) = nanmedian(y(x==xlevels(1))); medians(2) = nanmedian(y(x==xlevels(2)));
         plot(handle,xlevels,medians,'b-');
@@ -55,6 +60,9 @@ try
             y2 =  mdl.fitted; y2 = y2(grouping_factor==levels(2)); % in two steps to avoid a bug with model object methods
         end
         m2 = plot(x,y2,'ro'); 
+        % plot line trends
+        ab=robustfit(x,y2); 
+        plot(handle,sort(x),ab(2).*sort(x)+ab(1),'r-');
     end
     xlabel(xlabell); ylabel(ylabell);  
     if numel(xlevels)<=2
@@ -76,7 +84,6 @@ try
         c = ylim(); % retrieve current axis limits
         ylim([0 c(2)]);
     end
-
 catch err 
     % DEBUGGING
     % write rethrow(err) in the command window to know the error
