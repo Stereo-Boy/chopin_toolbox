@@ -298,6 +298,8 @@ Significant effect of Speed_Metric_T_Hands: load_S (t(510) = 2.47, adjusted p = 
 Significant effect of Mean_Velocity_T_Hands: stereo_M (t(508) = -2.35, adjusted p = 0.028922)
 ```
 
+* Tips: if you get a significant interaction term, it should automatically includes the main effect terms. If it does not, it is better to add them. Select the model which has them (possibly add them as solid factors to be sure).
+
 #### Interpreting coefficients 
 To interpret coefficients in a GLM, you need to understand the meaning of the coefficients, which depend on the link function and chosen distribution: 
 * with logit link (logistic regression), the coefficients represent the log-odds. So you can exponentiate the coefficients to get odds ratios. This can be interpreted as the factor by which the odds of the outcome increase (or decrease) for a one-unit change in the predictor. For example, a beta of 0.3 is associated with an odds ratio of exp(0.3) = 1.35, which means that the odds of the event are 1.35 higher for each one-unit increase in the predictor.

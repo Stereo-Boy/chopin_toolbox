@@ -34,12 +34,10 @@ try
     else
         y2 = zeros(size(x)); 
     end
-    ab=robustfit(x,y); 
-        plot(handle,sort(x),ab(2).*sort(x)+ab(1),'r-')
     if plotModel 
         plot(x,y2,'ro'); 
         ab=robustfit(x,y2); 
-        plot(handle,sort(x),ab(2).*sort(x)+ab(1),'r--');
+        plot(handle,sort(x),ab(2).*sort(x)+ab(1),'r-');
         line([x,x]',[y,y2]','Color','r');
     end
     xlabel(xlabell); ylabel(ylabell);
