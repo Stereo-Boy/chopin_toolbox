@@ -44,6 +44,15 @@ data.my_categ_factor = categorical(data.my_categ_factor); % first enforce catego
 data.my_categ_factor = reordercats(data.my_categ_factor,{'Reference','group2','group3'}); % reorder the levels so that your reference level is the first one in the list.
 ```
 
+### clean_names
+Functions like allGLM and effect_sizes need to have no underscore in variable names and modality names (the values that a categorical factor can take).
+It can be time consuming and counterintuitive to change that correctly, so to avoid cryptic later bugs, it is good to start by cleaning data automatically using this function.
+
+#### Typical use
+```matlab
+data = clean_names(data); % remove any _ in variables and modalities to avoid issues with effect_sizes function
+```
+
 ### check_distrib_indep
 To visualize the shape of dependent variable distribution and test whether normal with Kolmogorov-Smirnov test.
 
