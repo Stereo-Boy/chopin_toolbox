@@ -58,11 +58,6 @@ for f = 1:numel(mdl_factor_list)
         f2s(f) = round((mdl.Rsquared.Ordinary - mdls{1}.Rsquared.Ordinary)/(1-mdl.Rsquared.Ordinary),2);
         types(f) = {'Cohen s f2'};
     else % categorical case (or at least one categorical in an interaction): calculate cohen's d
-        % colons = strsplit(factor,':');
-        % % interaction case
-        % if numel(colons)>1 
-        % 
-        % end
         idx = find(strcmp(mdl_factor_list,factor));
         if numel(idx)==0 % problem detected
                 warning('We are not able to find the factor of interest in the list of factors - check code.');
@@ -139,9 +134,6 @@ end
 
 function f2size = interpret_f2(f2,type)
 % finding effect size using guidelines for interpretation of f2 indicating that 0.02 is a small effect, 0.15 is a medium effect, and 0.35 is a large effect (Cohen 1992)
-    % % removes parentheses in potential (X^2) factor
-    % factor(strfind(factor,'(')) = []; 
-    % factor(strfind(factor,')')) = []; 
 f2size = 'dubious';
     switch type
         case {'Cohen s f2'}

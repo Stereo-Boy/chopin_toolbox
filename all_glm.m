@@ -144,7 +144,12 @@ end
 mdls = mdls(models.Rank); %reorder mdls so it is in the same order as models
 models.Rank = (1:numel(mdl_aiccs))'; %make their rank increase too
 if verbose==1
-    disp(models)
+    if size(models,1)>1000
+        disp('Top best models (max 1000 models)')
+        disp(models(1:1000,:))
+    else
+        disp(models)
+    end
     disp(' ------------------------------------------------------------------------------- ')
 end
 catch err
