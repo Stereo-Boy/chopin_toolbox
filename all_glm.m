@@ -1,4 +1,4 @@
-function mdls = all_glm(model, verbose)
+function [mdls, rankings] = all_glm(model, verbose)
 % This function tries to apply all combinations of factors to determine the best GLM (Generalized Linear Model) using model comparison.
 % It needs a structure (model) containing the following fields:
 %   model.solid_factors = {'name_of_factor_or_list'}; % a factor or a list of factors that are always included in the model (use '' for none)
@@ -12,7 +12,7 @@ function mdls = all_glm(model, verbose)
 %   model.p_adjust_method = 'benjamini-hochberg'; % optional - method for adjusting p for multiple comparison - default 'none', other options are 'benjamini-hochberg', 'bonferroni' - optionnaly, you can enter the nb of hypothesis tests in model.nb_tests - actually used in display_model only
 %   model.nb_tests = 3; % optional - nb of hypothesis tests used for p adjustment - if not specified, the nb of tests is the nb of factors in the best model - actually used in display_model only
 % Example of use:
-%           model.solid_factors = {'meditation'}; %keep these between {} - intercept is included by default, use '-1' as a solid factor to remove intercept
+%           model.solid_factors = {'meditation'}; %keep these between {}
 %           model.liquid_factors = {'music','sport','expect','music:meditation','sport:meditation','expect:meditation'}; %keep these between {}
 %           model.data = data;
 %           model.max_nb_factors = 5;
@@ -22,7 +22,7 @@ function mdls = all_glm(model, verbose)
 %           model.links = { 'identity'}; %   model.links = {'log', 'reciprocal','identity'};
 %           model.exclude = [8,12];
 %           model.glme = 1; %default 0
-%     mdls = all_glm(model);
+%     [mdls, rankings] = all_glm(model);
 %     display_model(mdls{1}, model)
 %     h=subplot(1,4,4); plot_group_effect(data.initial_work_mem, data.meditation, h, 'Meditation group', 'initial working memory performance', {'Meditators','Non-meditators'})
 %     saveas(gcf,fullfile(figure_path,'working_memory_initial_glm.png')); 
@@ -137,18 +137,18 @@ if verbose==1
     dispi('We tested ',numel(mdl_aiccs),' models.')
 end
 if model.glme==0
-    models = sortrows(table((1:numel(mdl_aiccs))',mdl_formulas,mdl_links,mdl_aiccs,mdl_r2_adj,mdl_r2,norm_res,'VariableNames',{'Rank','formula','link','AICc','adj.R2(%)','R2(%)','norm.res.'}),'AICc');
+    rankings = sortrows(table((1:numel(mdl_aiccs))',mdl_formulas,mdl_links,mdl_aiccs,mdl_r2_adj,mdl_r2,norm_res,'VariableNames',{'Rank','formula','link','AICc','adj.R2(%)','R2(%)','norm.res.'}),'AICc');
 else
-    models = sortrows(table((1:numel(mdl_aiccs))',mdl_formulas,mdl_links,mdl_aiccs,mdl_r2_adj,mdl_r2,norm_res,'VariableNames',{'Rank','formula','link','AIC','adj.R2(%)','R2(%)','norm.res.'}),'AIC');
+    rankings = sortrows(table((1:numel(mdl_aiccs))',mdl_formulas,mdl_links,mdl_aiccs,mdl_r2_adj,mdl_r2,norm_res,'VariableNames',{'Rank','formula','link','AIC','adj.R2(%)','R2(%)','norm.res.'}),'AIC');
 end
-mdls = mdls(models.Rank); %reorder mdls so it is in the same order as models
-models.Rank = (1:numel(mdl_aiccs))'; %make their rank increase too
+mdls = mdls(rankings.Rank); %reorder mdls so it is in the same order as models
+rankings.Rank = (1:numel(mdl_aiccs))'; %make their rank increase too
 if verbose==1
-    if size(models,1)>1000
+    if size(rankings,1)>1000
         disp('Top best models (max 1000 models)')
-        disp(models(1:1000,:))
+        disp(rankings(1:1000,:))
     else
-        disp(models)
+        disp(rankings)
     end
     disp(' ------------------------------------------------------------------------------- ')
 end
