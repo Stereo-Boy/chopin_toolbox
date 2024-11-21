@@ -89,7 +89,7 @@ This function is almost identical to corrplot (Matlab included). Use it to check
 ```matlab
 % Only apply the collinearity analysis on continuous predictors
 % Use Kendall correlations that are more powerful when using small samples
-corrplot2(data(:,{'music','sport','expect'}),'type','Kendall')
+[tau, p] = corrplot2(data(:,{'music','sport','expect'}),'type','Kendall')
 snapnow; %plot figure when publishing markdown code
 ```
 Results obtained:
@@ -432,7 +432,8 @@ The code is mostly made of codes from other people:
 * [5] Burnham, K.P., and D.R. Anderson (2004). Multimodel Inference: Understanding AIC and BIC in Model Selection. Sociological Methods & Research 33: 261–304. https://doi.org/10.1177/0049124104268644. 
 
 ## Version History
-* Current version is 1.3
+* Current version is 1.4
+* Version 1.4 corrects several bug and calculate effects sizes
 * Version 1.3 allows a more flexible to use Benjamini-Hochberg correction for analyses spanning multiple models
 * Version 1.2 allows for multiple comparison correction (adjusted p-values)
 * Version 1.1 includes mixed-effect model estimation (GLME).
