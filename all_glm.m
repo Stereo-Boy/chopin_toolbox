@@ -104,7 +104,7 @@ for i=1:size(formulas,1)
     for j=1:numel(model.links)
         idx = numel(model.links)*(i-1)+j;
         if size(formulas,1)==1
-            formula = formulas;
+            formula = char(formulas);
         else
             formula = formulas{i};
         end
