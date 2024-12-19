@@ -133,7 +133,7 @@ function new_terms = split_factors(formula)
 end
 
 function f2size = interpret_f2(f2,type)
-% finding effect size using guidelines for interpretation of f2 indicating that 0.02 is a small effect, 0.15 is a medium effect, and 0.35 is a large effect (Cohen 1992)
+% finding effect size using guidelines for interpretation of f2 indicating that 0.02 is a small effect, 0.15 is a medium effect, and 0.35 is a large effect (Cohen, J. (2013). Statistical power analysis for the behavioral sciences. New York, NY: Routledge.)
 f2size = 'dubious';
     switch type
         case {'Cohen s f2'}

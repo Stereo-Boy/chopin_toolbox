@@ -336,7 +336,7 @@ To interpret the importance of one specific factor in the model (effect size equ
 We calculate a local Cohen's f2 (f squared) for mixed effect model for each factor by using the formula (for factor A):
 f2_A = (R2minusA - R2_all) / (1 - R2_all)
 with R2_all the R squared when all factors are in the model, and R2_minusA the R squared when all the factors minus A are included. Note that R2 is calculated here using the ordinary method and you could use the deviance method instead for GLME.
-For categorical factors, using Cohen's d is more appropriate. We calculate d from t and df for this factor, using a formula from Rosenthal and Rosnow, 1991. We interpret effect sizes using Cohen's (1992) guidelines expanded by Sawilowsky (2009). Note that we are not correcting for correlated designs here, so interpret sizes with caution. Note 2: most effect sizes will be inaccurate in the context of a logistic regression.
+For categorical factors, using Cohen's d is more appropriate. We calculate d from t and df for this factor, using a formula from Rosenthal and Rosnow, 1991. We interpret effect sizes using Cohen's [6] guidelines expanded by Sawilowsky (2009). Note that we are not correcting for correlated designs here, so interpret sizes with caution. Note 2: most effect sizes will be inaccurate in the context of a logistic regression.
 
 An example of output obtained is:
 ```matlab
@@ -430,6 +430,7 @@ The code is mostly made of codes from other people:
 * [3] Coxe, S., West, S. G., & Aiken, L. S. (2013). Generalized linear models. The Oxford handbook of quantitative methods, 2, 26-51.
 * [4] Dobson, A. J., & Barnett, A. G. (2018). An introduction to generalized linear models. CRC press.
 * [5] Burnham, K.P., and D.R. Anderson (2004). Multimodel Inference: Understanding AIC and BIC in Model Selection. Sociological Methods & Research 33: 261–304. https://doi.org/10.1177/0049124104268644. 
+* [6] Cohen, J. (2013). Statistical power analysis for the behavioral sciences. New York, NY: Routledge.
 
 ## Version History
 * Current version is 1.4
