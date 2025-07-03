@@ -50,14 +50,26 @@ for f = 1:numel(mdl_factor_list)
     if strcmp(factor,'(Intercept)') % skip intercept factor
         continue
     end
+    % first deal with interaction terms
+    flag =0;
+    interaction_terms = strsplit(factor,':');    % check for interaction terms (they contain : character)
+    if numel(interaction_terms)>1 % interaction - prepare terms to calculate local Cohen's f2
+        factor = [];
+        for i_term=1:numel(interaction_terms) % for each term in the interaction, we need to remove the potential _ of a categorical term
+            split_terms = strsplit(interaction_terms{i_term},'_'); % split by _
+            factor = [factor,split_terms{1}]; % clean the interaction term for categorical stuff
+            if i_term<numel(interaction_terms); factor = [factor,':']; end % also add : before adding the next term
+        end
+    end
+    % now separate categorical from non_categorical in non-interactions terms
     underscores = strsplit(factor,'_');    % check for categorical terms (be sure to have initially clean factor names of any _ )
     if numel(underscores)==1       % continuous factor only - calculate local Cohen's f2
         model.solid_factors = all_factors_in_model(~cellfun(@(x) strcmp(x,factor), all_factors_in_model)); % select all factors but the one of interest
         model.max_nb_factors = numel(model.solid_factors);
         mdls = all_glm(model,0); % run the model with verbose off
         f2s(f) = round((mdl.Rsquared.Ordinary - mdls{1}.Rsquared.Ordinary)/(1-mdl.Rsquared.Ordinary),2);
-        types(f) = {'Cohen s f2'};
-    else % categorical case (or at least one categorical in an interaction): calculate cohen's d
+        types(f) = {'Cohen s f2'}; 
+    else % categorical case: calculate cohen's d
         idx = find(strcmp(mdl_factor_list,factor));
         if numel(idx)==0 % problem detected
                 warning('We are not able to find the factor of interest in the list of factors - check code.');
