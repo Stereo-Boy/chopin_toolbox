@@ -106,7 +106,20 @@ Note that:
   * normal and inverse gaussian distributions are defined continuously on [-Inf, +Inf]
   * binomial and poisson distributions are counts of events and are then integers defined on [0, +Inf]
   * gamma distributions are defined continuously on ]0, +Inf]. I recommend to tranform your variable to X+eps if X is defined on [0, +Inf].
-* you define a maximum number of factors to include (as a rule of thumb, you need ~10 datapoints for each, interactions are considered as factors).
+* you define a maximum number of factors to include: for a GLM, you need 10-20 datapoints for estimating each coefficient [7], each continuous factor is a coefficient, each group level minus 1 is a coefficient, but also are the intercept, each interaction and a free variance parameter). For a GLME, first add a coefficient for the population variance (for intercept, or slopes). Then, you need to take into account the correlation between your repeated measures. Then your required sample size is calculated as follows: (1 + (ntrials-1) * intra-class correlation) * (nb_coefficients * minimal_nb_datapoints_per_coefficient) / ntrials. To calculate the intra-class coefficient, possibly use the following code:
+```matlab
+%data.DV is where the dependent variable is stored, data.Subject is where the subject ID is stored
+glme = fitlme(data, 'DV ~ 1 + (1|Subject)'); % Fit a model
+
+% Extract the variances / covarianceParameters returns the estimated standard deviations
+[~, ~, stats] = covarianceParameters(glme);
+sigma_b = stats{1}.Estimate(1); % Random effect standard deviation
+sigma_w = stats{2}.Estimate(1); % Residual standard deviation
+
+% Calculate ICC using variances
+icc = sigma_b^2 / (sigma_b^2 + sigma_w^2);
+dispi('ICC: ',icc)
+```
 * you define a cell array of liquid and solid factors: 
   * Solid factors are always included in the list (can be empty using {''}).
   * Liquid are picked in combination with solid factors until you reach the maximum number of factors (can be empty using {''}). Combinations with a number of factors inferior to the max are also included. 
@@ -431,6 +444,7 @@ The code is mostly made of codes from other people:
 * [4] Dobson, A. J., & Barnett, A. G. (2018). An introduction to generalized linear models. CRC press.
 * [5] Burnham, K.P., and D.R. Anderson (2004). Multimodel Inference: Understanding AIC and BIC in Model Selection. Sociological Methods & Research 33: 261–304. https://doi.org/10.1177/0049124104268644. 
 * [6] Cohen, J. (2013). Statistical power analysis for the behavioral sciences. New York, NY: Routledge.
+* [7] Frank, EH. (2015) Regression Modeling Strategies with Applications to Linear Models, Logistic and Ordinal Regression, and Survival Analysis. pp72. Second edi. Spinger.
 
 ## Version History
 * Current version is 1.4
