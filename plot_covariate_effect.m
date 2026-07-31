@@ -1,4 +1,5 @@
-function plot_covariate_effect(dv, covariate, handle, xlabell, ylabell, loggX, loggY, mdl, plotModel,model)  
+function plot_covariate_effect(dv, covariate, handle, xlabell, ylabell, loggX, loggY, mdl, plotModel,model, jitter)  
+% plot the effect of a continuous covariate on the dv
 % dv, dependent variable data
 % covariate data (continuous)
 % handle: handle of an existing figure plot or subplot
@@ -9,14 +10,17 @@ function plot_covariate_effect(dv, covariate, handle, xlabell, ylabell, loggX, l
 % mdl, the mdl structure (useful only if plotting model predictions with plotModel)
 % plotModel, 0 or 1, if 1, will use data predictions in mdl structure and plot the model data, optional
 % model is used to remove flagged outliers from the data
+% jitter is how much jitter to add in % (e.g. 0.2 = +/-20%)
 % ex of usage: 
 % h=subplot(1,4,1); 
-% plot_covariate_effect(data.initial_orient, data.music, h, 'Music practice (hours)', 'initial orientation threshold', 0, 0, mdls{1},1, model)
+% plot_covariate_effect(data.initial_orient, data.music, h, 'Music practice (hours)', 'initial orientation threshold', 0, 0, mdls{1},1, model,0.3)
 if ~exist('model','var'); model.exclude = []; plotModel=0; end
 if ~exist('loggX','var'); loggX=0; end
 if ~exist('loggY','var'); loggY=0; end
 if ~exist('plotModel','var'); plotModel=0; end
 if ~exist('mdl','var')||isempty(mdl); plotModel=0; end
+if ~exist('jitter','var')||isempty(jitter); jitter = 0; end
+
 try
     x = covariate; y =  dv;
     % exclude outliers
@@ -24,6 +28,8 @@ try
        x(model.exclude) = []; 
        y(model.exclude) = []; 
     end
+    % add jitter
+    x = x.*(1+jitter.*(2.*rand(max([width(x),height(x)]),1)-1));
     plot(handle,x,y,'k.'); hold on; 
     if plotModel==1
         if model.glme == 0 %glm
@@ -32,19 +38,19 @@ try
             y2 =  mdl.fitted;
         end
     else
-        y2 = zeros(size(x)); 
+        y2 = ones(size(x)); 
     end
     if plotModel 
-        plot(x,y2,'ro'); 
+        plot(x,y2,'b.'); 
         ab=robustfit(x,y2); 
-        plot(handle,sort(x),ab(2).*sort(x)+ab(1),'r-');
+        plot(handle,sort(x),ab(2).*sort(x)+ab(1),'b-');
         line([x,x]',[y,y2]','Color','r');
     end
     xlabel(xlabell); ylabel(ylabell);
     xlim([min(x).*0.95,max(x).*1.05]);
-    if loggX==1; set(gca, 'XScale', 'log'); end
-    if loggY==1
-        set(gca, 'YScale', 'log')
+    if loggX==1 && (~any(x<=0)); set(gca, 'XScale', 'log'); end
+    if loggY==1 && (~any(y<=0)) && (~any(y2<=0))        
+        set(gca, 'YScale', 'log');    
     else
         % if nothing negative, set the minimum y to 0 and keep the maximum, otherwise, likely an effect with positive and negative values
         if ~any(dv<0)

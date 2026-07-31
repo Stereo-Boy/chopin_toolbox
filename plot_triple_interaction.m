@@ -1,4 +1,4 @@
-function plot_triple_interaction(dv, x_grouping_factor, legend_grouping_factor, plot_grouping_factor, xlabell, ylabell, legendLabels, titleLabels, model) 
+function plot_triple_interaction(dv, x_grouping_factor, legend_grouping_factor, plot_grouping_factor, xlabell, ylabell, legendLabels, titleLabels, model, jitter) 
 % Plot triple interaction effect for a dependent variable between a covariate (in x axis) and a legend grouping factor (put in legend), and two separate plots according to a plot grouping factor
 % The covariate can also be categorical but the grouping factor has to have two levels only.
 % dv, dependent variable data
@@ -11,6 +11,7 @@ function plot_triple_interaction(dv, x_grouping_factor, legend_grouping_factor, 
 % optional legendLabels, label for grouping variable in legend, if not provided, read if from legend_grouping_factor values
 % optional titleLabels, title labels for each plot, if not provided, read if from plot_grouping_factor values
 % the model structure with the field exclude
+% jitter is how much jitter to add in % (e.g. 0.2 = +/-20%)
 % ex of usage: 
 % plot_triple_interaction(data_Hands.Speed_Metric_T_Hands, data_Hands.ageGroup, data_Hands.stereo, data_Hands.hand, 'Age group', 'Smoothness (speed metrics)', [], [], model) 
 
@@ -19,6 +20,7 @@ legend_levels = unique(legend_grouping_factor);
 plot_levels = unique(plot_grouping_factor);
 if ~exist('legendLabels','var')||isempty(legendLabels); legendLabels = {char(legend_levels(1)),char(legend_levels(2))}; end
 if ~exist('titleLabels','var')||isempty(titleLabels); titleLabels = {char(plot_levels(1)),char(plot_levels(2))}; end
+if ~exist('jitter','var')||isempty(jitter); jitterPt=0.2; end
 
 try
     % exclude outliers
@@ -27,6 +29,10 @@ try
        x_grouping_factor(model.exclude) = []; 
        legend_grouping_factor(model.exclude) = []; 
        plot_grouping_factor(model.exclude) = []; 
+    end
+    % add jitter
+    if ~iscategorical(x_grouping_factor)
+        x_grouping_factor = x_grouping_factor.*(1+jitter.*(2.*rand(max([width(x_grouping_factor),height(x_grouping_factor)]),1)-1));
     end
     figure('Color', 'w', 'units','normalized','outerposition',[0 0.1 1 0.5]);
     % first plot

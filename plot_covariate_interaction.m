@@ -1,4 +1,4 @@
-function plot_covariate_interaction(dv, covariate, legend_grouping_factor, handle, xlabell, ylabell, legendLabels, loggX, loggY, mdl, plotModel,model)  
+function plot_covariate_interaction(dv, covariate, legend_grouping_factor, handle, xlabell, ylabell, legendLabels, loggX, loggY, mdl, plotModel,model, jitter)    
 % dv, dependent variable data
 % covariate data (continuous)
 % legend_grouping_factor - interaction factor (levels)
@@ -11,14 +11,17 @@ function plot_covariate_interaction(dv, covariate, legend_grouping_factor, handl
 % mdl, the mdl structure (useful only if plotting model predictions with plotModel)
 % plotModel, 0 or 1, if 1, will use data predictions in mdl structure and plot the model data, optional
 % model is used to remove flagged outliers from the data
+% jitter is how much jitter to add in % (e.g. 0.2 = +/-20%)
 % ex of usage: 
 % h=subplot(1,4,1); 
-% plot_covariate_effect(data.initial_orient, data.music, data.ageGroup, h, 'Music practice (hours)', 'initial orientation threshold', [], 0, 0, mdls{1}, 1, model)
+% plot_covariate_interaction(data.initial_orient, data.music, data.ageGroup, h, 'Music practice (hours)', 'initial orientation threshold', [], 0, 0, mdls{1}, 1, model)
 if ~exist('model','var'); model.exclude = []; plotModel=0; end
 if ~exist('loggX','var'); loggX=0; end
 if ~exist('loggY','var'); loggY=0; end
 if ~exist('plotModel','var'); plotModel=0; end
 if ~exist('mdl','var')||isempty(mdl); plotModel=0; end
+if ~exist('jitter','var')||isempty(jitter); jitter=0.2; end
+
 legend_levels = unique(legend_grouping_factor);
 if ~exist('legendLabels','var')||isempty(legendLabels)
     legendLabels = {};
@@ -34,6 +37,8 @@ try
        x(model.exclude) = []; 
        y(model.exclude) = []; 
     end
+    % add jitter
+    x = x.*(1+jitter.*(2.*rand(max([width(x),height(x)]),1)-1));
     % select the correct model predictions in case of plotModel
     if plotModel==1 
         if model.glme == 0 %glm

@@ -17,9 +17,19 @@ if any(strcmpi(varargin,'vartype')); i=find(strcmpi(varargin,'vartype')); vartyp
 if any(strcmpi(varargin,'normality')); i=find(strcmpi(varargin,'normality')); norm_test = varargin{i+1}; else; norm_test = 'shapiro'; end
 if ~exist('header','var'); header = ''; end
 
+% making sure we have an array and not a table
+if istable(x); x = table2array(x); end
+if istable(y); y = table2array(y); end
+
 %reshaping x and y so that row data are subjects
 if size(x,2)>size(x,1); x=x'; end
 if size(y,2)>size(y,1); y=y'; end
+
+% removing any nan values
+x = x(~isnan(x));
+y = y(~isnan(y));
+
+if numel(x)==0 || numel(y)==0; warning('ttest2_format: something went wrong - no data left. Please check.'); h=[]; p=[]; ci=[]; stats=[]; return; end
 
 %computing t-test
 [h,p,ci,stats] = ttest2(x,y,'alpha',alpha,'dim',dim,'tail',tail,'vartype',vartype);

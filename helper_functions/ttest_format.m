@@ -15,10 +15,15 @@ if any(strcmpi(varargin,'tail')); i=find(strcmpi(varargin,'tail')); tail = varar
 if any(strcmpi(varargin,'normality')); i=find(strcmpi(varargin,'normality')); norm_test = varargin{i+1}; else; norm_test = 'shapiro'; end
 if ~exist('header','var'); header = ''; end
 
+% making sure we have an array and not a table
+if istable(x); x = table2array(x); end
+if istable(y); y = table2array(y); end
 
 %reshaping x and y so that row data are subjects
 if size(x,2)>size(x,1); x=x'; end
 if size(y,2)>size(y,1); y=y'; end
+
+if numel(x)~=numel(y); warning('ttest_format: something went wrong - we need paired data (same number of data in x and y). Please check.'); h=[]; p=[]; ci=[]; stats=[]; return; end
 
 %computing t-test
 [h,p,ci,stats] = ttest(x,y,'alpha',alpha,'dim',dim,'tail',tail);

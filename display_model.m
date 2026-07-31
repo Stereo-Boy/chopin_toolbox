@@ -105,8 +105,28 @@ if ~exist('model','var') || isfield(model,'nb_tests')==0; model.nb_tests = numel
     % automatically display local effect sizes Cohen's f2 for each factor
     effect_sizes_table = effect_sizes(mdl, model);
     disp(' ------------------------------------------------------------------------------- ')
+
+    % isolate the names of the factors, interaction terms and repeated factor if any
+    [factorList, interactionList] = splitByColon(effect_sizes_table.Factor(2:end));
+    if model.glme==1
+        tok = regexp(char(mdl.Formula), '\(1\s*\|\s*(\w+)\)', 'tokens');
+        repeatedFactorName = tok{1}{1};
+    else
+        repeatedFactorName = {}; 
+    end
+
+    % use these to calculate the number of data per estimated coefficient
+    dataPerCoefficient(model.data, model.glme, model.dv, factorList, numel(interactionList), repeatedFactorName);
+
 %% debugging
 catch err
    disp('Error caught: for debugging, write rethrow(err)')
    keyboard 
+end
+end
+
+function [noColon, withColon] = splitByColon(list) % separate interactions factors from standard factors
+    hasColon = contains(list, ':');
+    withColon = list(hasColon);
+    noColon = list(~hasColon)';
 end

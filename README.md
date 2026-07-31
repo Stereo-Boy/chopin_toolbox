@@ -27,11 +27,12 @@ The following functions are used together to easily separate model selection fro
 * display_model formats the results in the command window for one model in the list and show diagnostic plots for that model
 * adjust_p_benjamini_hochberg: adjust p-values when using multiple separate models
 * plot_group_effect/plot_covariate_effect/plot_interaction/plot_triple_interaction: plot the results easily for one model
+* dataPerCoefficient: check that there is enough data for the requested models
 The following 'typical use' sections should be chained one with the other as a typical pipeline.
 
 ### Warnings
-* As mentioned already, some stasticians consider that model estimation step is biasing the future hypothesis testing step and argue that you should have hypotheses and only tests them. I agree with that later part and recommend to use this toolbox only with factors that are parts of a very limited set of meaningful hypotheses.
-* Another point of concern is that it is highly debatable whether it is correct or not to compare models using different link functions using AIC. The statistic is based on the model likelihood, which is itself calculated differently depending on the link function. If you are OK with that conceptual risk, please move further.
+* As mentioned already, some statisticians consider that model estimation step is biasing the future hypothesis testing step and argue that you should have hypotheses and only tests them. I agree with that later part and recommend to use this toolbox only with factors that are parts of a very limited set of meaningful hypotheses.
+* Another point of concern is that it is highly debatable whether it is correct or not to compare models using different link functions using AIC. The statistic is based on the model likelihood, which is itself calculated differently depending on the link function. If you are OK with that conceptual risk, please move further, and if you are not, only use one link function at a time. 
 * When using GLM and GLME, many of the methods working well for linear regression become incorrect. Be aware of these limitations before starting.
 
 ### Preparing the data
@@ -106,20 +107,8 @@ Note that:
   * normal and inverse gaussian distributions are defined continuously on [-Inf, +Inf]
   * binomial and poisson distributions are counts of events and are then integers defined on [0, +Inf]
   * gamma distributions are defined continuously on ]0, +Inf]. I recommend to tranform your variable to X+eps if X is defined on [0, +Inf].
-* you define a maximum number of factors to include: for a GLM, you need 10-20 datapoints for estimating each coefficient [7], each continuous factor is a coefficient, each group level minus 1 is a coefficient, but also are the intercept, each interaction and a free variance parameter). For a GLME, first add a coefficient for the population variance (for intercept, or slopes). Then, you need to take into account the correlation between your repeated measures. Then your required sample size is calculated as follows: (1 + (ntrials-1) * intra-class correlation) * (nb_coefficients * minimal_nb_datapoints_per_coefficient) / ntrials. To calculate the intra-class coefficient, possibly use the following code:
-```matlab
-%data.DV is where the dependent variable is stored, data.Subject is where the subject ID is stored
-glme = fitlme(data, 'DV ~ 1 + (1|Subject)'); % Fit a model
-
-% Extract the variances / covarianceParameters returns the estimated standard deviations
-[~, ~, stats] = covarianceParameters(glme);
-sigma_b = stats{1}.Estimate(1); % Random effect standard deviation
-sigma_w = stats{2}.Estimate(1); % Residual standard deviation
-
-% Calculate ICC using variances
-icc = sigma_b^2 / (sigma_b^2 + sigma_w^2);
-dispi('ICC: ',icc)
-```
+* you define a maximum number of factors to include: for a GLM, you need 10-20 datapoints for estimating each coefficient [7], each continuous factor is a coefficient, each group level minus 1 is a coefficient, but also are the intercept, each interaction and a free variance parameter. For a GLME, also add a coefficient for the population variance (for intercept, or slopes) and take into account the correlation between your repeated measures. Your required sample size is calculated as follows: (1 + (ntrials-1) * intra-class correlation) * (nb_coefficients * minimal_nb_datapoints_per_coefficient) / ntrials. 
+To calculate the intra-class coefficient, possibly use dataPerCoefficient.m helper function.
 * you define a cell array of liquid and solid factors: 
   * Solid factors are always included in the list (can be empty using {''}).
   * Liquid are picked in combination with solid factors until you reach the maximum number of factors (can be empty using {''}). Combinations with a number of factors inferior to the max are also included. 
@@ -275,6 +264,7 @@ No adjustment for multiple comparisons
 
 Significant effect of meditation (t(45) = -2.95, adjusted p = 0.0050876)
 No significant effect of sport (t(45) = -1.77, adjusted p = 0.084127)
+ICC: N/A / Nb of data points per coefficient to estimate: 12.700
 ```
 ![a figure showing the diagnostics plot](example_figures/diagnostics.png)
 As you can see, the best model according to AICc shows 
@@ -282,8 +272,9 @@ As you can see, the best model according to AICc shows
 * a little bit of fanning: in other words, there is more variability of the residuals for larger fitted values. That could possibly be resolved by changing the distribution, the link function or transforming the dependent variable in log. 
 * normality of residuals (p = 0.64)
 * explain a good share of the variance (R^2 and adjusted R^2 - personal criterion)
+* there is enough datapoints available for estimating each requested coefficient (calculated with dataPerCoefficient.m): you need 10-20 datapoints for estimating each coefficient [7], after correcting for correlated data using ICC (here N/A as a GLM), showing the amount of correlation across repeated measures if any.
 
-Now if you are happy with this model fit, you can decide to look at the stastitics and interpret the results. This model shows a significant effect of meditation and music factors on the dependent variable.
+Now if you are happy with this model fit, you can decide to look at the statistics and interpret the results. This model shows a significant effect of meditation and music factors on the dependent variable.
 
 ### Model interpretation
 To interpret statistical analyses, you will need to:
