@@ -438,7 +438,8 @@ The code is mostly made of codes from other people:
 * [7] Frank, EH. (2015) Regression Modeling Strategies with Applications to Linear Models, Logistic and Ordinal Regression, and Survival Analysis. pp72. Second edi. Spinger.
 
 ## Version History
-* Current version is 1.4
+* Current version is 1.5
+* Version 1.5 ad data-per-coefficient/ICC estimates and improved check_distrib_indep / plotting functions
 * Version 1.4 corrects several bug and calculate effects sizes
 * Version 1.3 allows a more flexible to use Benjamini-Hochberg correction for analyses spanning multiple models
 * Version 1.2 allows for multiple comparison correction (adjusted p-values)
