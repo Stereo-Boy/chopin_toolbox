@@ -20,7 +20,7 @@ legend_levels = unique(legend_grouping_factor);
 plot_levels = unique(plot_grouping_factor);
 if ~exist('legendLabels','var')||isempty(legendLabels); legendLabels = {char(legend_levels(1)),char(legend_levels(2))}; end
 if ~exist('titleLabels','var')||isempty(titleLabels); titleLabels = {char(plot_levels(1)),char(plot_levels(2))}; end
-if ~exist('jitter','var')||isempty(jitter); jitterPt=0.2; end
+if ~exist('jitter','var')||isempty(jitter); jitter=0.2; end
 
 try
     % exclude outliers
